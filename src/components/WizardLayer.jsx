@@ -8,18 +8,12 @@ const WizardLayer = () => {
     return (
         <div className="row gy-4">
 
-            {/* NumberingWizard */}
-            <NumberingWizard />
-
-            {/* NumberingWizardWithLabel */}
-            <NumberingWizardWithLabel />
+          
 
             {/* OrderByFollowingStep */}
             <OrderByFollowingStep />
 
-            {/* WizardWithBesideLabel */}
-            <WizardWithBesideLabel />
-
+          
         </div>
 
     )

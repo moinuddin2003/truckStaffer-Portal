@@ -1,10 +1,14 @@
 import { Icon } from '@iconify/react/dist/iconify.js';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 
 const ViewProfileLayer = () => {
     const [imagePreview, setImagePreview] = useState('assets/images/user-grid/user-grid-img13.png');
     const [passwordVisible, setPasswordVisible] = useState(false);
     const [confirmPasswordVisible, setConfirmPasswordVisible] = useState(false);
+    const [user, setUser] = useState(() => {
+        const stored = localStorage.getItem('user');
+        return stored ? JSON.parse(stored) : null;
+    });
 
     // Toggle function for password field
     const togglePasswordVisibility = () => {
@@ -37,12 +41,12 @@ const ViewProfileLayer = () => {
                     <div className="pb-24 ms-16 mb-24 me-16  mt--100">
                         <div className="text-center border border-top-0 border-start-0 border-end-0">
                             <img
-                                src="assets/images/user-grid/user-grid-img14.png"
+                                src={user && user.image ? user.image : "assets/images/user-grid/user-grid-img14.png"}
                                 alt=""
                                 className="border br-white border-width-2-px w-200-px h-200-px rounded-circle object-fit-cover"
                             />
-                            <h6 className="mb-0 mt-16">Jacob Jones</h6>
-                            <span className="text-secondary-light mb-16">ifrandom@gmail.com</span>
+                            <h6 className="mb-0 mt-16">{user ? user.name : ''}</h6>
+                            <span className="text-secondary-light mb-16">{user ? user.email : ''}</span>
                         </div>
                         <div className="mt-24">
                             <h6 className="text-xl mb-16">Personal Info</h6>
@@ -52,62 +56,71 @@ const ViewProfileLayer = () => {
                                         Full Name
                                     </span>
                                     <span className="w-70 text-secondary-light fw-medium">
-                                        : Will Jonto
+                                        : {user ? user.name : ''}
                                     </span>
                                 </li>
                                 <li className="d-flex align-items-center gap-1 mb-12">
                                     <span className="w-30 text-md fw-semibold text-primary-light">
-                                        {" "}
                                         Email
                                     </span>
                                     <span className="w-70 text-secondary-light fw-medium">
-                                        : willjontoax@gmail.com
+                                        : {user ? user.email : ''}
                                     </span>
                                 </li>
                                 <li className="d-flex align-items-center gap-1 mb-12">
                                     <span className="w-30 text-md fw-semibold text-primary-light">
-                                        {" "}
                                         Phone Number
                                     </span>
                                     <span className="w-70 text-secondary-light fw-medium">
-                                        : (1) 2536 2561 2365
+                                        : {user ? user.phone || '-' : ''}
                                     </span>
                                 </li>
                                 <li className="d-flex align-items-center gap-1 mb-12">
                                     <span className="w-30 text-md fw-semibold text-primary-light">
-                                        {" "}
-                                        Department
+                                        Address
                                     </span>
                                     <span className="w-70 text-secondary-light fw-medium">
-                                        : Design
+                                        : {user ? user.address || '-' : ''}
                                     </span>
                                 </li>
                                 <li className="d-flex align-items-center gap-1 mb-12">
                                     <span className="w-30 text-md fw-semibold text-primary-light">
-                                        {" "}
-                                        Designation
+                                        Postal Code
                                     </span>
                                     <span className="w-70 text-secondary-light fw-medium">
-                                        : UI UX Designer
+                                        : {user ? user.postal_code || '-' : ''}
                                     </span>
                                 </li>
                                 <li className="d-flex align-items-center gap-1 mb-12">
                                     <span className="w-30 text-md fw-semibold text-primary-light">
-                                        {" "}
-                                        Languages
+                                        City
                                     </span>
                                     <span className="w-70 text-secondary-light fw-medium">
-                                        : English
+                                        : {user ? user.city || '-' : ''}
                                     </span>
                                 </li>
-                                <li className="d-flex align-items-center gap-1">
+                                <li className="d-flex align-items-center gap-1 mb-12">
                                     <span className="w-30 text-md fw-semibold text-primary-light">
-                                        {" "}
-                                        Bio
+                                        Country
                                     </span>
                                     <span className="w-70 text-secondary-light fw-medium">
-                                        : Lorem Ipsum&nbsp;is simply dummy text of the printing and
-                                        typesetting industry.
+                                        : {user ? user.country || '-' : ''}
+                                    </span>
+                                </li>
+                                <li className="d-flex align-items-center gap-1 mb-12">
+                                    <span className="w-30 text-md fw-semibold text-primary-light">
+                                        Company
+                                    </span>
+                                    <span className="w-70 text-secondary-light fw-medium">
+                                        : {user ? user.company || '-' : ''}
+                                    </span>
+                                </li>
+                                <li className="d-flex align-items-center gap-1 mb-12">
+                                    <span className="w-30 text-md fw-semibold text-primary-light">
+                                        Role
+                                    </span>
+                                    <span className="w-70 text-secondary-light fw-medium">
+                                        : {user ? user.role || '-' : ''}
                                     </span>
                                 </li>
                             </ul>

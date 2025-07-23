@@ -16,21 +16,6 @@ const DashBoardLayerTwo = () => {
       {/* UnitCountTwo */}
       <UnitCountTwo />
 
-      {/* RevenueGrowthOne */}
-      <RevenueGrowthOne />
-
-      {/* EarningStaticOne */}
-      <EarningStaticOne />
-
-      {/* CampaignStaticOne */}
-      <CampaignStaticOne />
-
-      {/* ClientPaymentOne  */}
-      <ClientPaymentOne />
-
-      {/* CountryStatusOne */}
-      <CountryStatusOne />
-
       {/* TopPerformanceOne */}
       <TopPerformanceOne />
 

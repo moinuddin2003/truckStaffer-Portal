@@ -1,0 +1,7 @@
+/* Confirmation message dark mode background */
+@media (prefers-color-scheme: dark) {
+  .confirmation-dark-bg {
+    background-color: #23272f !important;
+    color: #fff !important;
+  }
+} 
