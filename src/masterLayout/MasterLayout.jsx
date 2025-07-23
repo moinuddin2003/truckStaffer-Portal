@@ -101,7 +101,9 @@ const MasterLayout = ({ children }) => {
   };
 
   const handleLogout = () => {
-    // Clear any auth state here if needed
+    localStorage.removeItem('token');
+    localStorage.removeItem('name');
+    localStorage.removeItem('user');
     navigate('/sign-in');
   };
 

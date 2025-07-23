@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 
 const initialForm = {
   fullName: "",
@@ -63,6 +64,27 @@ const initialForm = {
 const OrderByFollowingStep = () => {
   const [currentStep, setCurrentStep] = useState(1);
   const [form, setForm] = useState(initialForm);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      navigate("/sign-in");
+      return;
+    }
+    // Optionally: check token expiration if your token is a JWT
+    try {
+      const payload = JSON.parse(atob(token.split(".")[1]));
+      if (payload.exp && Date.now() >= payload.exp * 1000) {
+        localStorage.removeItem("token");
+        navigate("/sign-in");
+      }
+    } catch (e) {
+      // If token is malformed, force logout
+      localStorage.removeItem("token");
+      navigate("/sign-in");
+    }
+  }, [navigate]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
