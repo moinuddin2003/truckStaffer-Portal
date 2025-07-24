@@ -3,6 +3,7 @@ import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 
 const SignUpLayer = () => {
+  console.log("SignUpLayer rendered"); // DEBUG
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -14,9 +15,11 @@ const SignUpLayer = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    console.log("Sign-up form submitted"); // DEBUG
     setError("");
     setLoading(true);
     try {
+      console.log("Sending sign-up request to API..."); // DEBUG
       const res = await fetch("https://admin.truckstaffer.com/api/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -27,39 +30,37 @@ const SignUpLayer = () => {
           password_confirmation: passwordConfirmation
         })
       });
+      console.log("API response status:", res.status); // DEBUG
       const data = await res.json();
+      console.log("API sign-up response:", data); // DEBUG
       if (data.status && data.token) {
         localStorage.setItem("token", data.token);
+        console.log("Token saved to localStorage:", localStorage.getItem("token")); // DEBUG
+        console.log("Navigating to home page"); // DEBUG
         navigate("/");
       } else {
         setError(data.message || "Registration failed");
+        console.log("Sign-up failed, error message:", data.message); // DEBUG
       }
     } catch (err) {
       setError("Network error");
+      console.log("Network error during sign-up:", err); // DEBUG
     } finally {
       setLoading(false);
     }
   };
   return (
-    <section className='auth bg-base d-flex flex-wrap'>
-      <div className='auth-left d-lg-block d-none' style={{height: '100vh', position: 'relative'}}>
-        <div className='d-flex align-items-center flex-column h-100 justify-content-center p-0 m-0' style={{width: '100%', height: '100%'}}>
-          <img src='login.jpg' alt='' style={{width: '100%', height: '100%', objectFit: 'cover', display: 'block'}} />
-          <div style={{position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', background: 'linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5))', pointerEvents: 'none'}}></div>
+    <section className='auth d-flex flex-wrap'>
+      <div className='auth-left d-lg-block d-none'>
+        <div className='d-flex align-items-center flex-column h-100 justify-content-center p-0 m-0 w-100'>
+          <img src='/login.jpg' alt='main-website-logo' />
+          <div className='auth-left-overlay'></div>
         </div>
       </div>
       <div className='auth-right py-32 px-24 d-flex flex-column justify-content-center'>
         <div className='max-w-464-px mx-auto w-100'>
-          <div>
-            <Link to='#' className='mb-40 max-w-290-px'>
-              <img src='assets/images/logo.png' alt='' />
-            </Link>
-            <h4 className='mb-12'>Sign Up to your Account</h4>
-            <p className='mb-32 text-secondary-light text-lg'>
-              Welcome back! please enter your detail
-            </p>
-          </div>
-          <form onSubmit={handleSubmit}>
+          <img src='/main-logo.png' alt='main-website-logo' className='auth-logo' />
+          <form className='auth-form' onSubmit={handleSubmit}>
             <div className='icon-field mb-16'>
               <span className='icon top-50 translate-middle-y'>
                 <Icon icon='f7:person' />
@@ -150,18 +151,19 @@ const SignUpLayer = () => {
             </div>
             <button
               type='submit'
-              className='btn btn-primary text-sm btn-sm px-12 py-16 w-100 radius-12 mt-32'
+              className='btn btn-primary text-sm btn-sm px-12 py-16 w-100 radius-12 mt-3'
               disabled={loading}
             >
               {loading ? 'Signing Up...' : 'Sign Up'}
             </button>
-            <div className='mt-32 center-border-horizontal text-center'>
+            <div className=' center-border-horizontal text-center'>
               <span className='bg-base z-1 px-4'>Or sign up with</span>
             </div>
-            <div className='mt-32 d-flex justify-content-center'>
+            <div className='mt- d-flex align-items-center justify-content-center gap-4 flex-wrap'>
               <button
                 type='button'
-                className='fw-semibold text-primary-light py-16 px-24 w-50 border radius-12 text-md d-flex align-items-center justify-content-center gap-12 line-height-1 bg-hover-primary-50'
+                className='fw-semibold text-primary-light py-16 px-24 border radius-12 text-md d-flex align-items-center justify-content-center gap-12 line-height-1 bg-hover-primary-50'
+                style={{ minWidth: '180px' }}
               >
                 <Icon
                   icon='logos:google-icon'
@@ -169,14 +171,12 @@ const SignUpLayer = () => {
                 />
                 Google
               </button>
-            </div>
-            <div className='mt-32 text-center text-sm'>
-              <p className='mb-0'>
-                Already have an account?{" "}
+              <div className='text-sm'>
+                <span>Already have an account? </span>
                 <Link to='/sign-in' className='text-primary-600 fw-semibold'>
                   Sign In
                 </Link>
-              </p>
+              </div>
             </div>
           </form>
         </div>

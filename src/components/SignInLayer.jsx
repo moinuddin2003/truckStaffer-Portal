@@ -3,6 +3,7 @@ import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 
 const SignInLayer = () => {
+  console.log("SignInLayer rendered"); // DEBUG
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -12,51 +13,53 @@ const SignInLayer = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    console.log("Login form submitted"); // DEBUG
     setError("");
     setLoading(true);
     try {
+      console.log("Sending login request to API..."); // DEBUG
       const res = await fetch("https://admin.truckstaffer.com/api/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password })
       });
+      console.log("API response status:", res.status); // DEBUG
       const data = await res.json();
+      console.log("API login response:", data); // DEBUG
       if (data.status && data.token) {
         localStorage.setItem("token", data.token);
+        console.log("Token saved to localStorage:", localStorage.getItem("token")); // DEBUG
         if (data.user && data.user.name) {
           localStorage.setItem("name", data.user.name);
           localStorage.setItem("user", JSON.stringify(data.user));
         }
+        console.log("Navigating to home page"); // DEBUG
         navigate("/");
       } else {
         setError(data.message || "Login failed");
+        console.log("Login failed, error message:", data.message); // DEBUG
       }
     } catch (err) {
       setError("Network error");
+      console.log("Network error during login:", err); // DEBUG
     } finally {
       setLoading(false);
     }
   };
   return (
-    <section className='auth bg-base d-flex flex-wrap'>
-      <div className='auth-left d-lg-block d-none' style={{height: '100vh', position: 'relative'}}>
-        <div className='d-flex align-items-center flex-column h-100 justify-content-center p-0 m-0' style={{width: '100%', height: '100%'}}>
-          <img src='login.jpg' alt='' style={{width: '100%', height: '100%', objectFit: 'cover', display: 'block'}} />
-          <div style={{position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', background: 'linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5))', pointerEvents: 'none'}}></div>
+    <section className='auth d-flex flex-wrap'>
+      <div className='auth-left d-lg-block d-none'>
+        <div className='d-flex align-items-center flex-column h-100 justify-content-center p-0 m-0 w-100' style={{position: 'relative'}}>
+          <img src='/login.jpg' alt='main-website-logo' />
+          <div className='auth-left-overlay'></div>
         </div>
       </div>
       <div className='auth-right py-32 px-24 d-flex flex-column justify-content-center'>
         <div className='max-w-464-px mx-auto w-100'>
-          <div>
-            <Link to='#' className='mb-40 max-w-290-px'>
-              <img src='assets/images/logo.png' alt='' />
-            </Link>
-            <h4 className='mb-12'>Sign In to your Account</h4>
-            <p className='mb-32 text-secondary-light text-lg'>
-              Welcome back! please enter your detail
-            </p>
-          </div>
-          <form onSubmit={handleSubmit}>
+          <img src='/main-logo.png' alt='main-website-logo' className='auth-logo' />
+          <h4 className='mb-12 auth-title'>Sign In to your Account</h4>
+          <p className='mb-32 text-lg auth-desc'>Welcome back! Please enter your details to sign in.</p>
+          <form className='auth-form' onSubmit={handleSubmit}>
             <div className='icon-field mb-16'>
               <span className='icon top-50 translate-middle-y'>
                 <Icon icon='mage:email' />

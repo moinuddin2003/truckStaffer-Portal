@@ -1,11 +1,11 @@
 import { Icon } from '@iconify/react/dist/iconify.js';
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 
 const ViewProfileLayer = () => {
     const [imagePreview, setImagePreview] = useState('assets/images/user-grid/user-grid-img13.png');
     const [passwordVisible, setPasswordVisible] = useState(false);
     const [confirmPasswordVisible, setConfirmPasswordVisible] = useState(false);
-    const [user, setUser] = useState(() => {
+    const [user] = useState(() => {
         const stored = localStorage.getItem('user');
         return stored ? JSON.parse(stored) : null;
     });
@@ -52,76 +52,48 @@ const ViewProfileLayer = () => {
                             <h6 className="text-xl mb-16">Personal Info</h6>
                             <ul>
                                 <li className="d-flex align-items-center gap-1 mb-12">
-                                    <span className="w-30 text-md fw-semibold text-primary-light">
-                                        Full Name
-                                    </span>
-                                    <span className="w-70 text-secondary-light fw-medium">
-                                        : {user ? user.name : ''}
-                                    </span>
+                                    <span className="w-30 text-md fw-semibold text-primary-light">ID</span>
+                                    <span className="w-70 text-secondary-light fw-medium">: {user ? user.id || '-' : '-'}</span>
                                 </li>
                                 <li className="d-flex align-items-center gap-1 mb-12">
-                                    <span className="w-30 text-md fw-semibold text-primary-light">
-                                        Email
-                                    </span>
-                                    <span className="w-70 text-secondary-light fw-medium">
-                                        : {user ? user.email : ''}
-                                    </span>
+                                    <span className="w-30 text-md fw-semibold text-primary-light">Full Name</span>
+                                    <span className="w-70 text-secondary-light fw-medium">: {user ? user.name || '-' : '-'}</span>
                                 </li>
                                 <li className="d-flex align-items-center gap-1 mb-12">
-                                    <span className="w-30 text-md fw-semibold text-primary-light">
-                                        Phone Number
-                                    </span>
-                                    <span className="w-70 text-secondary-light fw-medium">
-                                        : {user ? user.phone || '-' : ''}
-                                    </span>
+                                    <span className="w-30 text-md fw-semibold text-primary-light">Email</span>
+                                    <span className="w-70 text-secondary-light fw-medium">: {user ? user.email || '-' : '-'}</span>
                                 </li>
                                 <li className="d-flex align-items-center gap-1 mb-12">
-                                    <span className="w-30 text-md fw-semibold text-primary-light">
-                                        Address
-                                    </span>
-                                    <span className="w-70 text-secondary-light fw-medium">
-                                        : {user ? user.address || '-' : ''}
-                                    </span>
+                                    <span className="w-30 text-md fw-semibold text-primary-light">Role</span>
+                                    <span className="w-70 text-secondary-light fw-medium">: {user ? user.role || '-' : '-'}</span>
                                 </li>
                                 <li className="d-flex align-items-center gap-1 mb-12">
-                                    <span className="w-30 text-md fw-semibold text-primary-light">
-                                        Postal Code
-                                    </span>
-                                    <span className="w-70 text-secondary-light fw-medium">
-                                        : {user ? user.postal_code || '-' : ''}
-                                    </span>
+                                    <span className="w-30 text-md fw-semibold text-primary-light">Email Verified</span>
+                                    <span className="w-70 text-secondary-light fw-medium">: {user ? user.email_verified_at || '-' : '-'}</span>
                                 </li>
                                 <li className="d-flex align-items-center gap-1 mb-12">
-                                    <span className="w-30 text-md fw-semibold text-primary-light">
-                                        City
-                                    </span>
-                                    <span className="w-70 text-secondary-light fw-medium">
-                                        : {user ? user.city || '-' : ''}
-                                    </span>
+                                    <span className="w-30 text-md fw-semibold text-primary-light">Phone</span>
+                                    <span className="w-70 text-secondary-light fw-medium">: {user ? user.phone || '-' : '-'}</span>
                                 </li>
                                 <li className="d-flex align-items-center gap-1 mb-12">
-                                    <span className="w-30 text-md fw-semibold text-primary-light">
-                                        Country
-                                    </span>
-                                    <span className="w-70 text-secondary-light fw-medium">
-                                        : {user ? user.country || '-' : ''}
-                                    </span>
+                                    <span className="w-30 text-md fw-semibold text-primary-light">Address</span>
+                                    <span className="w-70 text-secondary-light fw-medium">: {user ? user.address || '-' : '-'}</span>
                                 </li>
                                 <li className="d-flex align-items-center gap-1 mb-12">
-                                    <span className="w-30 text-md fw-semibold text-primary-light">
-                                        Company
-                                    </span>
-                                    <span className="w-70 text-secondary-light fw-medium">
-                                        : {user ? user.company || '-' : ''}
-                                    </span>
+                                    <span className="w-30 text-md fw-semibold text-primary-light">Postal Code</span>
+                                    <span className="w-70 text-secondary-light fw-medium">: {user ? user.postal_code || '-' : '-'}</span>
                                 </li>
                                 <li className="d-flex align-items-center gap-1 mb-12">
-                                    <span className="w-30 text-md fw-semibold text-primary-light">
-                                        Role
-                                    </span>
-                                    <span className="w-70 text-secondary-light fw-medium">
-                                        : {user ? user.role || '-' : ''}
-                                    </span>
+                                    <span className="w-30 text-md fw-semibold text-primary-light">City</span>
+                                    <span className="w-70 text-secondary-light fw-medium">: {user ? user.city || '-' : '-'}</span>
+                                </li>
+                                <li className="d-flex align-items-center gap-1 mb-12">
+                                    <span className="w-30 text-md fw-semibold text-primary-light">Country</span>
+                                    <span className="w-70 text-secondary-light fw-medium">: {user ? user.country || '-' : '-'}</span>
+                                </li>
+                                <li className="d-flex align-items-center gap-1 mb-12">
+                                    <span className="w-30 text-md fw-semibold text-primary-light">Company</span>
+                                    <span className="w-70 text-secondary-light fw-medium">: {user ? user.company || '-' : '-'}</span>
                                 </li>
                             </ul>
                         </div>
@@ -265,97 +237,26 @@ const ViewProfileLayer = () => {
                                                     Phone
                                                 </label>
                                                 <input
-                                                    type="email"
+                                                    type="text"
                                                     className="form-control radius-8"
                                                     id="number"
                                                     placeholder="Enter phone number"
                                                 />
                                             </div>
                                         </div>
-                                        <div className="col-sm-6">
-                                            <div className="mb-20">
-                                                <label
-                                                    htmlFor="depart"
-                                                    className="form-label fw-semibold text-primary-light text-sm mb-8"
-                                                >
-                                                    Department
-                                                    <span className="text-danger-600">*</span>{" "}
-                                                </label>
-                                                <select
-                                                    className="form-control radius-8 form-select"
-                                                    id="depart"
-                                                    defaultValue="Select Event Title"
-                                                >
-                                                    <option value="Select Event Title" disabled>
-                                                        Select Event Title
-                                                    </option>
-                                                    <option value="Enter Event Title">Enter Event Title</option>
-                                                    <option value="Enter Event Title One">Enter Event Title One</option>
-                                                    <option value="Enter Event Title Two">Enter Event Title Two</option>
-                                                </select>
-                                            </div>
-                                        </div>
-                                        <div className="col-sm-6">
-                                            <div className="mb-20">
-                                                <label
-                                                    htmlFor="desig"
-                                                    className="form-label fw-semibold text-primary-light text-sm mb-8"
-                                                >
-                                                    Designation
-                                                    <span className="text-danger-600">*</span>{" "}
-                                                </label>
-                                                <select
-                                                    className="form-control radius-8 form-select"
-                                                    id="desig"
-                                                    defaultValue="Select Designation Title"
-                                                >
-                                                    <option value="Select Designation Title" disabled>
-                                                        Select Designation Title
-                                                    </option>
-                                                    <option value="Enter Designation Title">Enter Designation Title</option>
-                                                    <option value="Enter Designation Title One">Enter Designation Title One</option>
-                                                    <option value="Enter Designation Title Two">Enter Designation Title Two</option>
-                                                </select>
-                                            </div>
-                                        </div>
-                                        <div className="col-sm-6">
-                                            <div className="mb-20">
-                                                <label
-                                                    htmlFor="Language"
-                                                    className="form-label fw-semibold text-primary-light text-sm mb-8"
-                                                >
-                                                    Language
-                                                    <span className="text-danger-600">*</span>{" "}
-                                                </label>
-                                                <select
-                                                    className="form-control radius-8 form-select"
-                                                    id="Language"
-                                                    defaultValue="Select Language"
-                                                >
-                                                    <option value="Select Language" disabled>
-                                                        Select Language
-                                                    </option>
-                                                    <option value="English">English</option>
-                                                    <option value="Bangla">Bangla</option>
-                                                    <option value="Hindi">Hindi</option>
-                                                    <option value="Arabic">Arabic</option>
-                                                </select>
-                                            </div>
-                                        </div>
                                         <div className="col-sm-12">
                                             <div className="mb-20">
                                                 <label
-                                                    htmlFor="desc"
+                                                    htmlFor="address"
                                                     className="form-label fw-semibold text-primary-light text-sm mb-8"
                                                 >
-                                                    Description
+                                                    Address
                                                 </label>
-                                                <textarea
-                                                    name="#0"
+                                                <input
+                                                    type="text"
                                                     className="form-control radius-8"
-                                                    id="desc"
-                                                    placeholder="Write description..."
-                                                    defaultValue={""}
+                                                    id="address"
+                                                    placeholder="Enter address"
                                                 />
                                             </div>
                                         </div>
