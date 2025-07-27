@@ -64,7 +64,20 @@ const initialForm = {
 const OrderByFollowingStep = () => {
   const [currentStep, setCurrentStep] = useState(1);
   const [form, setForm] = useState(initialForm);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [completedSteps, setCompletedSteps] = useState([]);
+  const [applicationId, setApplicationId] = useState(null);
   const navigate = useNavigate();
+
+  // Effect to handle currentStep being greater than 7
+  useEffect(() => {
+    if (currentStep > 7) {
+      console.warn('Current step is greater than 7, redirecting to summary');
+      navigate("/application-summary");
+      return;
+    }
+  }, [currentStep, navigate]);
 
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -84,7 +97,41 @@ const OrderByFollowingStep = () => {
       localStorage.removeItem("token");
       navigate("/sign-in");
     }
+
+    // Load saved progress from localStorage
+    const savedProgress = localStorage.getItem("applicationProgress");
+    if (savedProgress) {
+      try {
+        const progress = JSON.parse(savedProgress);
+        setForm(progress.form || initialForm);
+        setCompletedSteps(progress.completedSteps || []);
+        
+        // Ensure currentStep is never greater than 7
+        const savedStep = progress.currentStep || 1;
+        if (savedStep > 7) {
+          console.warn('Saved step was greater than 7, redirecting to summary');
+          navigate("/application-summary");
+          return;
+        }
+        setCurrentStep(savedStep);
+        setApplicationId(progress.applicationId || null);
+      } catch (e) {
+        console.error("Error loading saved progress:", e);
+      }
+    }
   }, [navigate]);
+
+  // Save progress to localStorage whenever form or completedSteps change
+  useEffect(() => {
+    const progress = {
+      form,
+      completedSteps,
+      currentStep,
+      applicationId,
+      timestamp: Date.now()
+    };
+    localStorage.setItem("applicationProgress", JSON.stringify(progress));
+  }, [form, completedSteps, currentStep, applicationId]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -110,25 +157,261 @@ const OrderByFollowingStep = () => {
       return { ...prev, materialsHauled: Array.from(materials) };
     });
   };
+
   const handleCDLFile = (e) => {
     setForm((prev) => ({ ...prev, cdlUpload: e.target.files[0] }));
   };
+
   const handleMedCardFile = (e) => {
     setForm((prev) => ({ ...prev, medCardUpload: e.target.files[0] }));
   };
+
   const handleCOIFile = (e) => {
     setForm((prev) => ({ ...prev, coiUpload: e.target.files[0] }));
   };
+
   const handleBusinessDocs = (e) => {
     setForm((prev) => ({ ...prev, businessDocs: Array.from(e.target.files) }));
   };
 
-  const nextStep = () => {
-    setCurrentStep((prev) => prev + 1);
+  // Validate current step
+  const validateCurrentStep = () => {
+    switch (currentStep) {
+      case 1:
+        return form.fullName && form.phone && form.email;
+      case 2:
+        return form.ownership && form.equipmentType;
+      case 3:
+        return form.cdlStatus && form.yearsExperience;
+      case 4:
+        return form.numEmployees && form.workRadius;
+      case 5:
+        return form.insuranceCoverage;
+      case 6:
+        return form.felony && form.drugTesting;
+      case 7:
+        return true; // Optional step
+      default:
+        return true;
+    }
+  };
+
+  // Get step data for API call
+  const getStepData = (step) => {
+    switch (step) {
+      case 1:
+        return {
+          full_name: form.fullName,
+          company_name: form.companyName,
+          company_address: form.companyAddress,
+          owner_name: form.ownerName,
+          ein: form.businessEIN,
+          phone: form.phone,
+          email: form.email,
+          website: form.website,
+          business_structure: form.businessStructure,
+          mc_dot_number: form.mcDotNumber,
+          referral_source: form.referralSource,
+        };
+      case 2:
+        return {
+          ownership_status: form.ownership,
+          equipment_type: form.equipmentType,
+          truck_year: form.yearMakeModel,
+          truck_make_model: form.yearMakeModel,
+          truck_vin: form.vin,
+          gvwr: form.gvwr,
+          has_tarp: form.tarp === "Yes",
+          has_additional_trucks: form.additionalTrucks === "Yes",
+          has_dot_certificate: form.dotInspection === "Yes",
+          has_backup_plan: form.backupTrucks === "Yes",
+        };
+      case 3:
+        return {
+          cdl_class: form.cdlStatus,
+          cdl_suspended: form.cdlSuspended === "Yes",
+          experience_years: form.yearsExperience,
+          has_highway_experience: form.highwayExperience === "Yes",
+          materials_hauled: form.materialsHauled.join(', '),
+          has_gov_contracts: form.govContracts === "Yes",
+        };
+      case 4:
+        return {
+          employee_count: form.numEmployees,
+          work_radius: form.workRadius,
+          shift_flexibility: form.shiftWillingness,
+          preferred_states: form.regions,
+          start_availability: form.startDate,
+          weekly_availability: form.weeklyAvailability,
+        };
+      case 5:
+        return {
+          liability_coverage: form.insuranceCoverage,
+          cargo_coverage: form.cargoCoverage === "Yes",
+          insurance_expiry: form.insuranceExpiration,
+          has_worker_comp: form.workmansComp === "Yes",
+          allow_cert_holder: form.addTruckStaffer === "Yes",
+        };
+      case 6:
+        return {
+          has_felony: form.felony === "Yes",
+          willing_drug_test: form.drugTesting === "Yes",
+          enrolled_random_testing: form.enrolledTesting === "Yes",
+          has_safety_violations: form.safetyViolations === "Yes",
+          has_legal_issues: form.pendingLawsuits === "Yes",
+        };
+      case 7:
+        return {
+          current_contract_status: form.currentContracts,
+          using_dispatch_services: form.dispatchServices === "Yes",
+          using_telematics: form.telematics === "Yes",
+          interested_in_maintenance_discount: form.maintenanceInterest === "Yes",
+          additional_comments: form.additionalComments,
+        };
+      default:
+        return {};
+    }
+  };
+
+  // Submit step to API
+  const submitStep = async (step) => {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      setError("Authentication required");
+      return false;
+    }
+
+    setLoading(true);
+    setError("");
+
+    try {
+          const stepData = getStepData(step);
+    console.log(`Submitting step ${step} data:`, stepData);
+    console.log(`Current applicationId:`, applicationId);
+
+    // For step 1, we don't have applicationId yet, so use a different endpoint
+    const url = step === 1 
+      ? `https://admin.truckstaffer.com/api/application/step${step}`
+      : `https://admin.truckstaffer.com/api/application/${applicationId}/step${step}`;
+
+    console.log(`Making request to:`, url);
+
+    const response = await fetch(url, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`,
+        },
+        body: JSON.stringify(stepData),
+      });
+
+      console.log(`Step ${step} response status:`, response.status);
+      console.log(`Step ${step} response headers:`, response.headers);
+
+      // Check if response is JSON
+      const contentType = response.headers.get("content-type");
+      if (!contentType || !contentType.includes("application/json")) {
+        // Handle non-JSON response (like HTML error pages)
+        const textResponse = await response.text();
+        console.log(`Step ${step} non-JSON response:`, textResponse);
+        
+        if (response.status === 500) {
+          setError("Server error: ApplicationController not found. Please contact the backend team to create the missing controller.");
+        } else if (response.status === 401) {
+          setError("Authentication failed. Please log in again.");
+          localStorage.removeItem("token");
+          navigate("/sign-in");
+        } else if (response.status === 403) {
+          setError("Access denied. You don't have permission to perform this action.");
+        } else {
+          setError(`Server error (${response.status}). Please try again.`);
+        }
+        return false;
+      }
+
+      const data = await response.json();
+      console.log(`Step ${step} API response:`, data);
+
+      if (response.ok && (data.status || data.success)) {
+        // If this is step 1 and we get a successful response, extract the application ID
+        if (step === 1) {
+          // Check multiple possible locations for application_id
+          const applicationId = data.application_id || data.data?.application_id || data.id || data.applicationId;
+          if (applicationId) {
+            setApplicationId(applicationId);
+            console.log(`Application ID received: ${applicationId}`);
+          } else {
+            console.warn('Step 1 successful but no application_id found in response:', data);
+            // For now, we'll continue but this will cause issues with subsequent steps
+            // The backend needs to return the application_id
+          }
+        }
+        
+        setCompletedSteps(prev => [...prev, step]);
+        return true;
+      } else {
+        setError(data.message || `Failed to submit step ${step}`);
+        return false;
+      }
+    } catch (err) {
+      console.error(`Error submitting step ${step}:`, err);
+      
+      if (err.name === 'SyntaxError') {
+        setError("Server returned invalid response. Please try again later.");
+      } else if (err.name === 'TypeError' && err.message.includes('fetch')) {
+        setError("Network error. Please check your internet connection.");
+      } else {
+        setError("An unexpected error occurred. Please try again.");
+      }
+      return false;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const nextStep = async () => {
+    if (!validateCurrentStep()) {
+      setError("Please fill in all required fields");
+      return;
+    }
+
+    // Check if we have applicationId for steps 2 and beyond
+    if (currentStep >= 2 && !applicationId) {
+      setError("Application ID not found. Please contact support or try refreshing the page.");
+      return;
+    }
+
+    const success = await submitStep(currentStep);
+    if (success) {
+      // If this is step 7, navigate to summary page
+      if (currentStep === 7) {
+        navigate("/application-summary");
+      } else {
+        setCurrentStep((prev) => {
+          const nextStep = prev + 1;
+          // Ensure we don't go beyond step 7
+          if (nextStep > 7) {
+            console.warn('Attempting to go beyond step 7, redirecting to summary');
+            navigate("/application-summary");
+            return 7;
+          }
+          return nextStep;
+        });
+        setError("");
+      }
+    }
   };
 
   const prevStep = () => {
     setCurrentStep((prev) => prev - 1);
+    setError("");
+  };
+
+  const goToStep = (step) => {
+    if (completedSteps.includes(step - 1) || step === 1) {
+      setCurrentStep(step);
+      setError("");
+    }
   };
 
   return (
@@ -139,20 +422,81 @@ const OrderByFollowingStep = () => {
           <p className="text-neutral-500">
             Please fill out all required information to begin your application.
           </p>
+
+          {error && (
+            <div className="alert alert-danger mb-4" role="alert">
+              {error}
+            </div>
+          )}
+
           <div className="form-wizard">
             <form>
-              <div className="form-wizard-header overflow-x-auto scroll-sm pb-8 my-32">
-                <ul className="list-unstyled form-wizard-list style-two">
-                  <li className={`form-wizard-list__item ${currentStep === 1 ? "active" : ""}`}> <div className="form-wizard-list__line"><span className="count">1</span></div><span className="text text-xs fw-semibold">Contact & Business Info</span></li>
-                  <li className={`form-wizard-list__item ${currentStep === 2 ? "active" : ""}`}> <div className="form-wizard-list__line"><span className="count">2</span></div><span className="text text-xs fw-semibold">Equipment Details</span></li>
-                  <li className={`form-wizard-list__item ${currentStep === 3 ? "active" : ""}`}> <div className="form-wizard-list__line"><span className="count">3</span></div><span className="text text-xs fw-semibold">CDL & Credentials</span></li>
-                  <li className={`form-wizard-list__item ${currentStep === 4 ? "active" : ""}`}> <div className="form-wizard-list__line"><span className="count">4</span></div><span className="text text-xs fw-semibold">Operational Capacity</span></li>
-                  <li className={`form-wizard-list__item ${currentStep === 5 ? "active" : ""}`}> <div className="form-wizard-list__line"><span className="count">5</span></div><span className="text text-xs fw-semibold">Insurance & Compliance</span></li>
-                  <li className={`form-wizard-list__item ${currentStep === 6 ? "active" : ""}`}> <div className="form-wizard-list__line"><span className="count">6</span></div><span className="text text-xs fw-semibold">Screening & Safety</span></li>
-                  <li className={`form-wizard-list__item ${currentStep === 7 ? "active" : ""}`}> <div className="form-wizard-list__line"><span className="count">7</span></div><span className="text text-xs fw-semibold">Additional Info</span></li>
-                  <li className={`form-wizard-list__item ${currentStep === 8 ? "active" : ""}`}> <div className="form-wizard-list__line"><span className="count">8</span></div><span className="text text-xs fw-semibold">Confirmation</span></li>
-                </ul>
-              </div>
+                             {/* Enhanced step indicator */}
+               <div className="mb-6">
+                 <div className="d-flex align-items-center justify-content-between mb-3">
+                   <h6 className="text-lg fw-semibold text-primary-light mb-0">
+                     Step {Math.min(currentStep, 7)} of 7
+                   </h6>
+                   <div className="d-flex align-items-center gap-2">
+                     <span className="text-sm text-success-600 fw-medium">
+                       {completedSteps.length} completed
+                     </span>
+                     <div className="bg-success-100 px-3 py-2 rounded-pill">
+                       <span className="text-xs text-success-700 fw-bold">
+                         {Math.round((completedSteps.length / 7) * 100)}%
+                       </span>
+                     </div>
+                   </div>
+                 </div>
+                 
+                 {/* Progress bar */}
+                 <div className="progress mb-3" style={{ height: '8px' }}>
+                   <div 
+                     className="progress-bar bg-success" 
+                     role="progressbar" 
+                     style={{ width: `${(completedSteps.length / 7) * 100}%` }}
+                     aria-valuenow={completedSteps.length} 
+                     aria-valuemin="0" 
+                     aria-valuemax="7"
+                   ></div>
+                 </div>
+                 
+                 {/* Step names */}
+                 <div className="d-flex justify-content-between align-items-center">
+                   {[
+                     { num: 1, name: "Contact Info" },
+                     { num: 2, name: "Equipment" },
+                     { num: 3, name: "CDL & Credentials" },
+                     { num: 4, name: "Operations" },
+                     { num: 5, name: "Insurance" },
+                     { num: 6, name: "Screening" },
+                     { num: 7, name: "Additional" }
+                   ].map((step, index) => (
+                     <div key={step.num} className="text-center flex-fill">
+                       <div className={`d-inline-flex align-items-center justify-content-center mb-2 ${
+                         currentStep === step.num 
+                           ? 'text-primary-600' 
+                           : completedSteps.includes(step.num) 
+                           ? 'text-success-600' 
+                           : 'text-neutral-400'
+                       }`}>
+                         <div className={`rounded-circle d-flex align-items-center justify-content-center me-2 ${
+                           currentStep === step.num 
+                             ? 'bg-primary-600 text-white' 
+                             : completedSteps.includes(step.num) 
+                             ? 'bg-success-600 text-white' 
+                             : 'bg-neutral-200 text-neutral-500'
+                         }`} style={{ width: '24px', height: '24px', fontSize: '12px', fontWeight: 'bold' }}>
+                           {completedSteps.includes(step.num) ? '✓' : step.num}
+                         </div>
+                         <span className="text-xs fw-medium d-none d-md-inline">{step.name}</span>
+                       </div>
+                     </div>
+                   ))}
+                 </div>
+               </div>
+
+              {/* Step 1: Contact & Business Info */}
               {currentStep === 1 && (
                 <fieldset className="wizard-fieldset show">
                   <h6 className="text-md text-neutral-500 mb-3">Basic Contact & Business Info</h6>
@@ -170,7 +514,7 @@ const OrderByFollowingStep = () => {
                       <input type="text" className="form-control" name="companyAddress" value={form.companyAddress} onChange={handleChange} />
                     </div>
                     <div className="col-sm-6">
-                      <label className="form-label">Owner’s Name</label>
+                      <label className="form-label">Owner's Name</label>
                       <input type="text" className="form-control" name="ownerName" value={form.ownerName} onChange={handleChange} />
                     </div>
                     <div className="col-sm-6">
@@ -210,19 +554,26 @@ const OrderByFollowingStep = () => {
                     </div>
                   </div>
                   <div className="form-group text-end mt-4">
-                    <button type="button" className="btn btn-primary-600 px-32" onClick={nextStep}>
-                      Next
+                    <button 
+                      type="button" 
+                      className="btn btn-primary-600 px-32" 
+                      onClick={nextStep}
+                      disabled={loading}
+                    >
+                      {loading ? "Saving..." : "Next"}
                     </button>
                   </div>
                 </fieldset>
               )}
+
+              {/* Step 2: Equipment Details */}
               {currentStep === 2 && (
                 <fieldset className="wizard-fieldset show">
                   <h6 className="text-md text-neutral-500 mb-3">Equipment Details</h6>
                   <div className="row gy-3">
                     <div className="col-sm-6">
-                      <label className="form-label">Do you currently own or lease a dump truck?</label>
-                      <select className="form-control" name="ownership" value={form.ownership} onChange={handleChange}>
+                      <label className="form-label">Do you currently own or lease a dump truck?*</label>
+                      <select className="form-control" name="ownership" value={form.ownership} onChange={handleChange} required>
                         <option value="">Select</option>
                         <option value="Own">Own</option>
                         <option value="Lease">Lease</option>
@@ -230,8 +581,8 @@ const OrderByFollowingStep = () => {
                       </select>
                     </div>
                     <div className="col-sm-6">
-                      <label className="form-label">Equipment Type</label>
-                      <input type="text" className="form-control" name="equipmentType" value={form.equipmentType} onChange={handleChange} placeholder="Tri-Axle, Quad-Axle, etc." />
+                      <label className="form-label">Equipment Type*</label>
+                      <input type="text" className="form-control" name="equipmentType" value={form.equipmentType} onChange={handleChange} placeholder="Tri-Axle, Quad-Axle, etc." required />
                     </div>
                     <div className="col-sm-6">
                       <label className="form-label">Year/Make/Model</label>
@@ -283,18 +634,22 @@ const OrderByFollowingStep = () => {
                     </div>
                   </div>
                   <div className="form-group d-flex align-items-center justify-content-end gap-8 mt-4">
-                    <button type="button" className="btn btn-neutral-500 border-neutral-100 px-32" onClick={prevStep}>Back</button>
-                    <button type="button" className="btn btn-primary-600 px-32" onClick={nextStep}>Next</button>
+                    <button type="button" className="btn btn-neutral-500 border-neutral-100 px-32" onClick={prevStep} disabled={loading}>Back</button>
+                    <button type="button" className="btn btn-primary-600 px-32" onClick={nextStep} disabled={loading}>
+                      {loading ? "Saving..." : "Next"}
+                    </button>
                   </div>
                 </fieldset>
               )}
+
+              {/* Step 3: CDL & Credentials */}
               {currentStep === 3 && (
                 <fieldset className="wizard-fieldset show">
                   <h6 className="text-md text-neutral-500 mb-3">CDL & Driver Credentials</h6>
                   <div className="row gy-3">
                     <div className="col-sm-6">
-                      <label className="form-label">Do you have a valid CDL?</label>
-                      <select className="form-control" name="cdlStatus" value={form.cdlStatus} onChange={handleChange}>
+                      <label className="form-label">Do you have a valid CDL?*</label>
+                      <select className="form-control" name="cdlStatus" value={form.cdlStatus} onChange={handleChange} required>
                         <option value="">Select</option>
                         <option value="Class A">Class A</option>
                         <option value="Class B">Class B</option>
@@ -310,8 +665,8 @@ const OrderByFollowingStep = () => {
                       </select>
                     </div>
                     <div className="col-sm-6">
-                      <label className="form-label">Years in trucking/dump hauling business</label>
-                      <input type="number" className="form-control" name="yearsExperience" value={form.yearsExperience} onChange={handleChange} min="0" />
+                      <label className="form-label">Years in trucking/dump hauling business*</label>
+                      <input type="number" className="form-control" name="yearsExperience" value={form.yearsExperience} onChange={handleChange} min="0" required />
                     </div>
                     <div className="col-12">
                       <label className="form-label">What types of materials have you hauled?</label>
@@ -349,22 +704,26 @@ const OrderByFollowingStep = () => {
                     </div>
                   </div>
                   <div className="form-group d-flex align-items-center justify-content-end gap-8 mt-4">
-                    <button type="button" className="btn btn-neutral-500 border-neutral-100 px-32" onClick={prevStep}>Back</button>
-                    <button type="button" className="btn btn-primary-600 px-32" onClick={nextStep}>Next</button>
+                    <button type="button" className="btn btn-neutral-500 border-neutral-100 px-32" onClick={prevStep} disabled={loading}>Back</button>
+                    <button type="button" className="btn btn-primary-600 px-32" onClick={nextStep} disabled={loading}>
+                      {loading ? "Saving..." : "Next"}
+                    </button>
                   </div>
                 </fieldset>
               )}
+
+              {/* Step 4: Operational Capacity */}
               {currentStep === 4 && (
                 <fieldset className="wizard-fieldset show">
                   <h6 className="text-md text-neutral-500 mb-3">Operational Capacity</h6>
                   <div className="row gy-3">
                     <div className="col-sm-6">
-                      <label className="form-label">Number of employees/drivers (including yourself)</label>
-                      <input type="number" className="form-control" name="numEmployees" value={form.numEmployees} onChange={handleChange} min="1" />
+                      <label className="form-label">Number of employees/drivers (including yourself)*</label>
+                      <input type="number" className="form-control" name="numEmployees" value={form.numEmployees} onChange={handleChange} min="1" required />
                     </div>
                     <div className="col-sm-6">
-                      <label className="form-label">Preferred Work Radius</label>
-                      <select className="form-control" name="workRadius" value={form.workRadius} onChange={handleChange}>
+                      <label className="form-label">Preferred Work Radius*</label>
+                      <select className="form-control" name="workRadius" value={form.workRadius} onChange={handleChange} required>
                         <option value="">Select</option>
                         <option value="Local">Local</option>
                         <option value="Regional">Regional</option>
@@ -406,18 +765,22 @@ const OrderByFollowingStep = () => {
                     </div>
                   </div>
                   <div className="form-group d-flex align-items-center justify-content-end gap-8 mt-4">
-                    <button type="button" className="btn btn-neutral-500 border-neutral-100 px-32" onClick={prevStep}>Back</button>
-                    <button type="button" className="btn btn-primary-600 px-32" onClick={nextStep}>Next</button>
+                    <button type="button" className="btn btn-neutral-500 border-neutral-100 px-32" onClick={prevStep} disabled={loading}>Back</button>
+                    <button type="button" className="btn btn-primary-600 px-32" onClick={nextStep} disabled={loading}>
+                      {loading ? "Saving..." : "Next"}
+                    </button>
                   </div>
                 </fieldset>
               )}
+
+              {/* Step 5: Insurance & Compliance */}
               {currentStep === 5 && (
                 <fieldset className="wizard-fieldset show">
                   <h6 className="text-md text-neutral-500 mb-3">Insurance & Compliance</h6>
                   <div className="row gy-3">
                     <div className="col-sm-6">
-                      <label className="form-label">Current insurance coverage</label>
-                      <select className="form-control" name="insuranceCoverage" value={form.insuranceCoverage} onChange={handleChange}>
+                      <label className="form-label">Current insurance coverage*</label>
+                      <select className="form-control" name="insuranceCoverage" value={form.insuranceCoverage} onChange={handleChange} required>
                         <option value="">Select</option>
                         <option value="$1M Liability">Yes – $1M Liability</option>
                         <option value="Less than $1M">Less than $1M</option>
@@ -463,26 +826,30 @@ const OrderByFollowingStep = () => {
                     </div>
                   </div>
                   <div className="form-group d-flex align-items-center justify-content-end gap-8 mt-4">
-                    <button type="button" className="btn btn-neutral-500 border-neutral-100 px-32" onClick={prevStep}>Back</button>
-                    <button type="button" className="btn btn-primary-600 px-32" onClick={nextStep}>Next</button>
+                    <button type="button" className="btn btn-neutral-500 border-neutral-100 px-32" onClick={prevStep} disabled={loading}>Back</button>
+                    <button type="button" className="btn btn-primary-600 px-32" onClick={nextStep} disabled={loading}>
+                      {loading ? "Saving..." : "Next"}
+                    </button>
                   </div>
                 </fieldset>
               )}
+
+              {/* Step 6: Screening & Safety */}
               {currentStep === 6 && (
                 <fieldset className="wizard-fieldset show">
                   <h6 className="text-md text-neutral-500 mb-3">Screening & Safety</h6>
                   <div className="row gy-3">
                     <div className="col-sm-6">
-                      <label className="form-label">Ever convicted of a felony or major traffic violation?</label>
-                      <select className="form-control" name="felony" value={form.felony} onChange={handleChange}>
+                      <label className="form-label">Ever convicted of a felony or major traffic violation?*</label>
+                      <select className="form-control" name="felony" value={form.felony} onChange={handleChange} required>
                         <option value="">Select</option>
                         <option value="Yes">Yes</option>
                         <option value="No">No</option>
                       </select>
                     </div>
                     <div className="col-sm-6">
-                      <label className="form-label">Willing to undergo drug testing if required?</label>
-                      <select className="form-control" name="drugTesting" value={form.drugTesting} onChange={handleChange}>
+                      <label className="form-label">Willing to undergo drug testing if required?*</label>
+                      <select className="form-control" name="drugTesting" value={form.drugTesting} onChange={handleChange} required>
                         <option value="">Select</option>
                         <option value="Yes">Yes</option>
                         <option value="No">No</option>
@@ -514,11 +881,15 @@ const OrderByFollowingStep = () => {
                     </div>
                   </div>
                   <div className="form-group d-flex align-items-center justify-content-end gap-8 mt-4">
-                    <button type="button" className="btn btn-neutral-500 border-neutral-100 px-32" onClick={prevStep}>Back</button>
-                    <button type="button" className="btn btn-primary-600 px-32" onClick={nextStep}>Next</button>
+                    <button type="button" className="btn btn-neutral-500 border-neutral-100 px-32" onClick={prevStep} disabled={loading}>Back</button>
+                    <button type="button" className="btn btn-primary-600 px-32" onClick={nextStep} disabled={loading}>
+                      {loading ? "Saving..." : "Next"}
+                    </button>
                   </div>
                 </fieldset>
               )}
+
+              {/* Step 7: Additional Information */}
               {currentStep === 7 && (
                 <fieldset className="wizard-fieldset show">
                   <h6 className="text-md text-neutral-500 mb-3">Additional Information</h6>
@@ -563,25 +934,12 @@ const OrderByFollowingStep = () => {
                   </div>
                   <div className="form-group d-flex align-items-center justify-content-end gap-8 mt-4">
                     <button type="button" className="btn btn-neutral-500 border-neutral-100 px-32" onClick={prevStep}>Back</button>
-                    <button type="button" className="btn btn-primary-600 px-32" onClick={nextStep}>Next</button>
+                    <button type="button" className="btn btn-primary-600 px-32" onClick={nextStep}>Submit Application</button>
                   </div>
                 </fieldset>
               )}
-              {currentStep === 8 && (
-                <fieldset className="wizard-fieldset show">
-                  <h6 className="text-md text-neutral-500 mb-3">Confirmation</h6>
-                  <div className="row gy-3">
-                    <div className="bg-light confirmation-dark-bg p-4 rounded text-center">
-                      <h5 className="mb-2">Thank you for submitting your application!</h5>
-                      <p className="mb-0">We will review your information and contact you soon.</p>
-                    </div>
-                  </div>
-                  <div className="form-group d-flex align-items-center justify-content-end gap-8 mt-4">
-                    <button type="button" className="btn btn-neutral-500 border-neutral-100 px-32" onClick={prevStep}>Back</button>
-                    <button type="button" className="btn btn-primary-600 px-32" disabled>Submit (API coming soon)</button>
-                  </div>
-                </fieldset>
-              )}
+
+              
             </form>
           </div>
         </div>

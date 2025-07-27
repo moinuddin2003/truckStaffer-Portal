@@ -13,6 +13,7 @@ import ErrorPage from "./pages/ErrorPage";
 import ViewProfilePage from "./pages/ViewProfilePage";
 import SignInPage from "./pages/SignInPage";
 import SignUpPage from "./pages/SignUpPage";
+import ApplicationSummaryPage from "./pages/ApplicationSummaryPage";
 
 function PrivateRoute({ children }) {
   const token = localStorage.getItem("token");
@@ -133,6 +134,15 @@ function App() {
                   element={
                     <PrivateRoute>
                       <WizardPage />
+                    </PrivateRoute>
+                  }
+                />
+                <Route
+                  exact
+                  path="/application-summary"
+                  element={
+                    <PrivateRoute>
+                      <ApplicationSummaryPage />
                     </PrivateRoute>
                   }
                 />

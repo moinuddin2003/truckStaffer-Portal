@@ -123,7 +123,7 @@ const SignInLayer = () => {
             <div className='mt-32 center-border-horizontal text-center'>
               <span className='bg-base z-1 px-4'>Or sign in with</span>
             </div>
-            <div className='mt-32 d-flex justify-content-center'>
+            {/* <div className='mt-32 d-flex justify-content-center'>
               <button
                 type='button'
                 className='fw-semibold text-primary-light py-16 px-24 w-50 border radius-12 text-md d-flex align-items-center justify-content-center gap-12 line-height-1 bg-hover-primary-50'
@@ -134,7 +134,7 @@ const SignInLayer = () => {
                 />
                 Google
               </button>
-            </div>
+            </div> */}
             <div className='mt-32 text-center text-sm'>
               <p className='mb-0'>
                 Don’t have an account?{" "}

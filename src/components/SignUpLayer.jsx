@@ -160,7 +160,7 @@ const SignUpLayer = () => {
               <span className='bg-base z-1 px-4'>Or sign up with</span>
             </div>
             <div className='mt- d-flex align-items-center justify-content-center gap-4 flex-wrap'>
-              <button
+              {/* <button
                 type='button'
                 className='fw-semibold text-primary-light py-16 px-24 border radius-12 text-md d-flex align-items-center justify-content-center gap-12 line-height-1 bg-hover-primary-50'
                 style={{ minWidth: '180px' }}
@@ -170,7 +170,7 @@ const SignUpLayer = () => {
                   className='text-primary-600 text-xl line-height-1'
                 />
                 Google
-              </button>
+              </button> */}
               <div className='text-sm'>
                 <span>Already have an account? </span>
                 <Link to='/sign-in' className='text-primary-600 fw-semibold'>
