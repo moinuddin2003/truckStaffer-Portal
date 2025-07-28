@@ -17,10 +17,22 @@ const MasterLayout = ({ children }) => {
     const handleStorage = () => {
       setUserName(localStorage.getItem('name') || 'User');
     };
+    
+    // Listen for custom profile update events
+    const handleProfileUpdate = () => {
+      setUserName(localStorage.getItem('name') || 'User');
+    };
+    
     window.addEventListener('storage', handleStorage);
+    window.addEventListener('profileUpdated', handleProfileUpdate);
+    
     // Also update on mount
     handleStorage();
-    return () => window.removeEventListener('storage', handleStorage);
+    
+    return () => {
+      window.removeEventListener('storage', handleStorage);
+      window.removeEventListener('profileUpdated', handleProfileUpdate);
+    };
   }, []);
 
   useEffect(() => {
@@ -218,10 +230,6 @@ const MasterLayout = ({ children }) => {
                 >
                   <Icon icon='heroicons:bars-3-solid' className='icon' />
                 </button>
-                <form className='navbar-search'>
-                  <input type='text' name='search' placeholder='Search' />
-                  <Icon icon='ion:search-outline' className='icon' />
-                </form>
               </div>
             </div>
             <div className='col-auto'>

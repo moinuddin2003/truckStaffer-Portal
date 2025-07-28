@@ -20,10 +20,6 @@ const ViewProfileLayer = () => {
         email: '',
         phone: '',
         address: '',
-        postal_code: '',
-        city: '',
-        country: '',
-        company: '',
         image: null
     });
     
@@ -93,16 +89,16 @@ const ViewProfileLayer = () => {
                     email: userData.email || '',
                     phone: userData.phone || '',
                     address: userData.address || '',
-                    postal_code: userData.postal_code || '',
-                    city: userData.city || '',
-                    country: userData.country || '',
-                    company: userData.company || '',
                     image: userData.image || null
                 });
                 
                 if (userData.image) {
                     setImagePreview(userData.image);
                 }
+                
+                // Update localStorage with the fetched data
+                localStorage.setItem('name', userData.name || '');
+                localStorage.setItem('user', JSON.stringify(userData));
             } else {
                 setMessage({ type: 'error', text: data.message || 'Failed to load profile data' });
             }
@@ -112,6 +108,31 @@ const ViewProfileLayer = () => {
                 setMessage({ type: 'error', text: 'Request timeout. Please try again.' });
             } else {
                 setMessage({ type: 'error', text: 'Network error. Please check your connection and try again.' });
+            }
+            
+            // Fallback to localStorage data if API fails
+            const storedName = localStorage.getItem('name');
+            const storedUser = localStorage.getItem('user');
+            
+            if (storedName || storedUser) {
+                try {
+                    const userData = storedUser ? JSON.parse(storedUser) : {};
+                    setProfileData({
+                        name: storedName || userData.name || '',
+                        email: userData.email || '',
+                        phone: userData.phone || '',
+                        address: userData.address || '',
+                        image: userData.image || null
+                    });
+                    
+                    if (userData.image) {
+                        setImagePreview(userData.image);
+                    }
+                    
+                    setMessage({ type: 'warning', text: 'Using cached profile data. Some information may be outdated.' });
+                } catch (parseError) {
+                    console.error('Error parsing stored user data:', parseError);
+                }
             }
         } finally {
             setLoading(false);
@@ -148,10 +169,6 @@ const ViewProfileLayer = () => {
             formData.append('email', profileData.email.trim());
             formData.append('phone', profileData.phone || '');
             formData.append('address', profileData.address || '');
-            formData.append('postal_code', profileData.postal_code || '');
-            formData.append('city', profileData.city || '');
-            formData.append('country', profileData.country || '');
-            formData.append('company', profileData.company || '');
             
             if (profileData.image instanceof File) {
                 formData.append('image', profileData.image);
@@ -184,10 +201,6 @@ const ViewProfileLayer = () => {
                         email: updatedData.email || profileData.email,
                         phone: updatedData.phone || profileData.phone,
                         address: updatedData.address || profileData.address,
-                        postal_code: updatedData.postal_code !== undefined ? updatedData.postal_code : profileData.postal_code,
-                        city: updatedData.city !== undefined ? updatedData.city : profileData.city,
-                        country: updatedData.country !== undefined ? updatedData.country : profileData.country,
-                        company: updatedData.company !== undefined ? updatedData.company : profileData.company,
                         image: updatedData.image || profileData.image
                     };
                     
@@ -204,6 +217,9 @@ const ViewProfileLayer = () => {
                     const currentUser = JSON.parse(localStorage.getItem('user') || '{}');
                     const updatedUser = { ...currentUser, ...newProfileData };
                     localStorage.setItem('user', JSON.stringify(updatedUser));
+                    
+                    // Dispatch custom event to notify header about profile update
+                    window.dispatchEvent(new CustomEvent('profileUpdated'));
                 } else {
                     // If no data in response, refresh from server
                     setTimeout(() => {
@@ -381,22 +397,6 @@ const ViewProfileLayer = () => {
                                     <span className="w-30 text-md fw-semibold text-primary-light">Address</span>
                                     <span className="w-70 text-secondary-light fw-medium">: {profileData.address || '-'}</span>
                                 </li>
-                                <li className="d-flex align-items-center gap-1 mb-12">
-                                    <span className="w-30 text-md fw-semibold text-primary-light">Postal Code</span>
-                                    <span className="w-70 text-secondary-light fw-medium">: {profileData.postal_code || '-'}</span>
-                                </li>
-                                <li className="d-flex align-items-center gap-1 mb-12">
-                                    <span className="w-30 text-md fw-semibold text-primary-light">City</span>
-                                    <span className="w-70 text-secondary-light fw-medium">: {profileData.city || '-'}</span>
-                                </li>
-                                <li className="d-flex align-items-center gap-1 mb-12">
-                                    <span className="w-30 text-md fw-semibold text-primary-light">Country</span>
-                                    <span className="w-70 text-secondary-light fw-medium">: {profileData.country || '-'}</span>
-                                </li>
-                                <li className="d-flex align-items-center gap-1 mb-12">
-                                    <span className="w-30 text-md fw-semibold text-primary-light">Company</span>
-                                    <span className="w-70 text-secondary-light fw-medium">: {profileData.company || '-'}</span>
-                                </li>
                             </ul>
                         </div>
                     </div>
@@ -553,25 +553,7 @@ const ViewProfileLayer = () => {
                                                 />
                                             </div>
                                         </div>
-                                        <div className="col-sm-6">
-                                            <div className="mb-20">
-                                                <label
-                                                    htmlFor="company"
-                                                    className="form-label fw-semibold text-primary-light text-sm mb-8"
-                                                >
-                                                    Company
-                                                </label>
-                                                <input
-                                                    type="text"
-                                                    className="form-control radius-8"
-                                                    id="company"
-                                                    name="company"
-                                                    value={profileData.company}
-                                                    onChange={handleProfileChange}
-                                                    placeholder="Enter company name"
-                                                />
-                                            </div>
-                                        </div>
+
                                         <div className="col-sm-12">
                                             <div className="mb-20">
                                                 <label
@@ -591,63 +573,7 @@ const ViewProfileLayer = () => {
                                                 />
                                             </div>
                                         </div>
-                                        <div className="col-sm-4">
-                                            <div className="mb-20">
-                                                <label
-                                                    htmlFor="postal_code"
-                                                    className="form-label fw-semibold text-primary-light text-sm mb-8"
-                                                >
-                                                    Postal Code
-                                                </label>
-                                                <input
-                                                    type="text"
-                                                    className="form-control radius-8"
-                                                    id="postal_code"
-                                                    name="postal_code"
-                                                    value={profileData.postal_code}
-                                                    onChange={handleProfileChange}
-                                                    placeholder="Enter postal code"
-                                                />
-                                            </div>
-                                        </div>
-                                        <div className="col-sm-4">
-                                            <div className="mb-20">
-                                                <label
-                                                    htmlFor="city"
-                                                    className="form-label fw-semibold text-primary-light text-sm mb-8"
-                                                >
-                                                    City
-                                                </label>
-                                                <input
-                                                    type="text"
-                                                    className="form-control radius-8"
-                                                    id="city"
-                                                    name="city"
-                                                    value={profileData.city}
-                                                    onChange={handleProfileChange}
-                                                    placeholder="Enter city"
-                                                />
-                                            </div>
-                                        </div>
-                                        <div className="col-sm-4">
-                                            <div className="mb-20">
-                                                <label
-                                                    htmlFor="country"
-                                                    className="form-label fw-semibold text-primary-light text-sm mb-8"
-                                                >
-                                                    Country
-                                                </label>
-                                                <input
-                                                    type="text"
-                                                    className="form-control radius-8"
-                                                    id="country"
-                                                    name="country"
-                                                    value={profileData.country}
-                                                    onChange={handleProfileChange}
-                                                    placeholder="Enter country"
-                                                />
-                                            </div>
-                                        </div>
+
                                     </div>
                                     <div className="d-flex align-items-center justify-content-center gap-3">
                                         <button

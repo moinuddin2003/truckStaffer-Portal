@@ -1,9 +1,12 @@
 import { Icon } from "@iconify/react/dist/iconify.js";
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { GoogleLogin } from '@react-oauth/google';
+import { jwtDecode } from "jwt-decode";
 
 const SignUpLayer = () => {
-  console.log("SignUpLayer rendered"); // DEBUG
+  console.log("🚀 SignUpLayer component rendered");
+  
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -11,15 +14,18 @@ const SignUpLayer = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [googleLoading, setGoogleLoading] = useState(false);
+  
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log("Sign-up form submitted"); // DEBUG
+    console.log("📝 Regular sign-up form submitted");
     setError("");
     setLoading(true);
+    
     try {
-      console.log("Sending sign-up request to API..."); // DEBUG
+      console.log("🌐 Sending sign-up request to API...");
       const res = await fetch("https://admin.truckstaffer.com/api/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -30,25 +36,99 @@ const SignUpLayer = () => {
           password_confirmation: passwordConfirmation
         })
       });
-      console.log("API response status:", res.status); // DEBUG
+      
+      console.log("📡 API response status:", res.status);
       const data = await res.json();
-      console.log("API sign-up response:", data); // DEBUG
+      console.log("📦 API sign-up response:", data);
+      
       if (data.status && data.token) {
         localStorage.setItem("token", data.token);
-        console.log("Token saved to localStorage:", localStorage.getItem("token")); // DEBUG
-        console.log("Navigating to home page"); // DEBUG
+        console.log("💾 Token saved to localStorage:", localStorage.getItem("token"));
+        console.log("🏠 Navigating to home page");
         navigate("/");
       } else {
         setError(data.message || "Registration failed");
-        console.log("Sign-up failed, error message:", data.message); // DEBUG
+        console.log("❌ Sign-up failed, error message:", data.message);
       }
     } catch (err) {
       setError("Network error");
-      console.log("Network error during sign-up:", err); // DEBUG
+      console.log("🌐 Network error during sign-up:", err);
     } finally {
       setLoading(false);
     }
   };
+
+  // Google Sign-In handlers
+  const handleGoogleSuccess = async (credentialResponse) => {
+    console.log("🎉 Google Sign-Up success callback triggered");
+    setGoogleLoading(true);
+    setError("");
+    
+    try {
+      const { credential } = credentialResponse;
+      
+      if (!credential) {
+        console.error("❌ No credential in response");
+        setError("Google Sign-Up failed - no credential received");
+        return;
+      }
+
+      // Decode the JWT token to get user info
+      const decoded = jwtDecode(credential);
+      console.log("👤 Decoded user data:", decoded);
+      
+      const userData = {
+        email: decoded.email,
+        name: decoded.name,
+        picture: decoded.picture,
+        googleId: decoded.sub,
+        credential: credential
+      };
+
+      console.log("👤 User data extracted:", userData);
+
+      // For testing - simulate successful authentication
+      console.log("🎯 Simulating backend authentication...");
+      
+      const mockResponse = {
+        status: true,
+        token: 'mock_jwt_token_' + Date.now(),
+        user: {
+          id: 1,
+          name: userData.name,
+          email: userData.email,
+          picture: userData.picture
+        }
+      };
+      
+      // Store in localStorage
+      localStorage.setItem('token', mockResponse.token);
+      localStorage.setItem('name', mockResponse.user.name);
+      localStorage.setItem('user', JSON.stringify(mockResponse.user));
+      
+      console.log("✅ Authentication successful, data stored in localStorage");
+      console.log("📦 Stored token:", mockResponse.token);
+      console.log("👤 Stored user:", mockResponse.user);
+      
+      console.log("✅ Google Sign-Up successful, navigating to home...");
+      console.log("🏠 Navigating to home page");
+      // Force navigation to home page
+      window.location.href = "/";
+      
+    } catch (err) {
+      console.error("❌ Google Sign-Up error:", err);
+      setError("Google Sign-Up failed");
+    } finally {
+      setGoogleLoading(false);
+    }
+  };
+
+  const handleGoogleError = () => {
+    console.error("❌ Google Sign-Up error");
+    setError("Google Sign-Up failed");
+    setGoogleLoading(false);
+  };
+
   return (
     <section className='auth d-flex flex-wrap'>
       <div className='auth-left d-lg-block d-none'>
@@ -60,6 +140,9 @@ const SignUpLayer = () => {
       <div className='auth-right py-32 px-24 d-flex flex-column justify-content-center'>
         <div className='max-w-464-px mx-auto w-100'>
           <img src='/main-logo.png' alt='main-website-logo' className='auth-logo' />
+          <h4 className='mb-12 auth-title'>Create your Account</h4>
+          <p className='mb-32 text-lg auth-desc'>Join us! Please enter your details to sign up.</p>
+          
           <form className='auth-form' onSubmit={handleSubmit}>
             <div className='icon-field mb-16'>
               <span className='icon top-50 translate-middle-y'>
@@ -74,6 +157,7 @@ const SignUpLayer = () => {
                 required
               />
             </div>
+            
             <div className='icon-field mb-16'>
               <span className='icon top-50 translate-middle-y'>
                 <Icon icon='mage:email' />
@@ -87,8 +171,9 @@ const SignUpLayer = () => {
                 required
               />
             </div>
+            
             <div className='mb-20'>
-              <div className='position-relative '>
+              <div className='position-relative'>
                 <div className='icon-field'>
                   <span className='icon top-50 translate-middle-y'>
                     <Icon icon='solar:lock-password-outline' />
@@ -123,7 +208,13 @@ const SignUpLayer = () => {
                 Your password must have at least 8 characters
               </span>
             </div>
-            {error && <div className='text-danger mb-2'>{error}</div>}
+            
+            {error && (
+              <div className='text-danger mb-2'>
+                <strong>Error:</strong> {error}
+              </div>
+            )}
+            
             <div className=''>
               <div className='d-flex justify-content-between gap-2'>
                 <div className='form-check style-check d-flex align-items-start'>
@@ -132,11 +223,9 @@ const SignUpLayer = () => {
                     type='checkbox'
                     defaultValue=''
                     id='condition'
+                    required
                   />
-                  <label
-                    className='form-check-label text-sm'
-                    htmlFor='condition'
-                  >
+                  <label className='form-check-label text-sm' htmlFor='condition'>
                     By creating an account means you agree to the
                     <Link to='#' className='text-primary-600 fw-semibold'>
                       Terms &amp; Conditions
@@ -149,6 +238,7 @@ const SignUpLayer = () => {
                 </div>
               </div>
             </div>
+            
             <button
               type='submit'
               className='btn btn-primary text-sm btn-sm px-12 py-16 w-100 radius-12 mt-3'
@@ -156,21 +246,30 @@ const SignUpLayer = () => {
             >
               {loading ? 'Signing Up...' : 'Sign Up'}
             </button>
+            
             <div className=' center-border-horizontal text-center'>
               <span className='bg-base z-1 px-4'>Or sign up with</span>
             </div>
-            <div className='mt- d-flex align-items-center justify-content-center gap-4 flex-wrap'>
-              {/* <button
-                type='button'
-                className='fw-semibold text-primary-light py-16 px-24 border radius-12 text-md d-flex align-items-center justify-content-center gap-12 line-height-1 bg-hover-primary-50'
-                style={{ minWidth: '180px' }}
-              >
-                <Icon
-                  icon='logos:google-icon'
-                  className='text-primary-600 text-xl line-height-1'
-                />
-                Google
-              </button> */}
+            
+            <div className='mb-3 d-flex align-items-center justify-content-center gap-4 flex-wrap'>
+              {/* <GoogleLogin
+                onSuccess={handleGoogleSuccess}
+                onError={handleGoogleError}
+                useOneTap={false}
+                theme="outline"
+                size="large"
+                text="signin_with"
+                shape="rectangular"
+                logo_alignment="left"
+                width="400"
+              />
+              
+              {googleLoading && (
+                <div className="text-center mt-2">
+                  <small className="text-secondary">Signing up with Google...</small>
+                </div>
+              )} */}
+              
               <div className='text-sm'>
                 <span>Already have an account? </span>
                 <Link to='/sign-in' className='text-primary-600 fw-semibold'>

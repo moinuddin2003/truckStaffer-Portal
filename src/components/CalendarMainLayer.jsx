@@ -1,9 +1,8 @@
-import React, { useEffect, useRef } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import Calendar from './child/Calendar'
 import { Icon } from '@iconify/react/dist/iconify.js'
 import flatpickr from 'flatpickr';
 import 'flatpickr/dist/flatpickr.min.css';
-
 
 const DatePicker = ({ id, placeholder }) => {
     const datePickerRef = useRef(null);
@@ -26,8 +25,123 @@ const DatePicker = ({ id, placeholder }) => {
     );
 };
 
-
 const CalendarMainLayer = () => {
+    const [calendarEvents, setCalendarEvents] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
+
+    // Fetch calendar data from API
+    useEffect(() => {
+        const fetchCalendarData = async () => {
+            try {
+                setLoading(true);
+                const response = await fetch('https://admin.truckstaffer.com/api/calendar/get', {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const result = await response.json();
+                
+                if (result.success) {
+                    setCalendarEvents(result.data);
+                } else {
+                    throw new Error(result.message || 'Failed to fetch calendar data');
+                }
+            } catch (err) {
+                console.error('Error fetching calendar data:', err);
+                setError(err.message);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchCalendarData();
+    }, []);
+
+    // Helper function to get priority color
+    const getPriorityColor = (priority) => {
+        switch (priority) {
+            case 'high':
+                return 'bg-danger-600';
+            case 'medium':
+                return 'bg-warning-600';
+            case 'low':
+                return 'bg-info-600';
+            default:
+                return 'bg-success-600';
+        }
+    };
+
+    // Helper function to format date
+    const formatDate = (dateString) => {
+        const date = new Date(dateString);
+        const now = new Date();
+        const tomorrow = new Date(now);
+        tomorrow.setDate(tomorrow.getDate() + 1);
+        
+        if (date.toDateString() === now.toDateString()) {
+            return `Today, ${date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}`;
+        } else if (date.toDateString() === tomorrow.toDateString()) {
+            return `Tomorrow, ${date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}`;
+        } else {
+            return date.toLocaleDateString('en-US', { 
+                weekday: 'long', 
+                month: 'short', 
+                day: 'numeric',
+                hour: '2-digit', 
+                minute: '2-digit' 
+            });
+        }
+    };
+
+    // Helper function to get time range
+    const getTimeRange = (start, end) => {
+        const startTime = new Date(start).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+        const endTime = new Date(end).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+        return `${startTime} - ${endTime}`;
+    };
+
+    if (loading) {
+        return (
+            <div className="row gy-4">
+                <div className="col-12">
+                    <div className="card h-100 p-0">
+                        <div className="card-body p-24 text-center">
+                            <div className="spinner-border text-primary" role="status">
+                                <span className="visually-hidden">Loading...</span>
+                            </div>
+                            <p className="mt-3">Loading calendar events...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        );
+    }
+
+    if (error) {
+        return (
+            <div className="row gy-4">
+                <div className="col-12">
+                    <div className="card h-100 p-0">
+                        <div className="card-body p-24 text-center">
+                            <div className="alert alert-danger" role="alert">
+                                <Icon icon="fluent:error-circle-24-regular" className="icon text-lg me-2" />
+                                Error loading calendar events: {error}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        );
+    }
+
     return (
         <>
             <div className="row gy-4">
@@ -35,17 +149,29 @@ const CalendarMainLayer = () => {
                     <div className="card h-100 p-0">
                         <div className="card-body p-24">
                             <div className="mt-32">
-                                <div className="event-item d-flex align-items-center justify-content-between gap-4 pb-16 mb-16 border border-start-0 border-end-0 border-top-0">
+                                {calendarEvents.length === 0 ? (
+                                    <div className="text-center text-secondary-light">
+                                        <Icon icon="solar:calendar-linear" className="icon text-3xl mb-3" />
+                                        <p>No upcoming interviews scheduled</p>
+                                    </div>
+                                ) : (
+                                    calendarEvents.map((event) => (
+                                        <div key={event.id} className="event-item d-flex align-items-center justify-content-between gap-4 pb-16 mb-16 border border-start-0 border-end-0 border-top-0">
                                     <div className="">
                                         <div className="d-flex align-items-center gap-10">
-                                            <span className="w-12-px h-12-px bg-success-600 rounded-circle fw-medium" />
+                                                    <span className={`w-12-px h-12-px ${getPriorityColor(event.priority)} rounded-circle fw-medium`} />
                                             <span className="text-secondary-light">
-                                                Today, 10:30 AM - 11:30 AM
+                                                        {getTimeRange(event.start, event.end)}
                                             </span>
                                         </div>
                                         <span className="text-primary-light fw-semibold text-md mt-4">
-                                            John Smith - CDL-A Interview
+                                                    {event.title}
                                         </span>
+                                                {event.description && (
+                                                    <p className="text-secondary-light text-sm mt-2 mb-0">
+                                                        {event.description}
+                                                    </p>
+                                                )}
                                     </div>
                                     <div className="dropdown">
                                         <button
@@ -104,213 +230,8 @@ const CalendarMainLayer = () => {
                                         </ul>
                                     </div>
                                 </div>
-                                <div className="event-item d-flex align-items-center justify-content-between gap-4 pb-16 mb-16 border border-start-0 border-end-0 border-top-0">
-                                    <div className="">
-                                        <div className="d-flex align-items-center gap-10">
-                                            <span className="w-12-px h-12-px bg-warning-600 rounded-circle fw-medium" />
-                                            <span className="text-secondary-light">
-                                                Tomorrow, 2:00 PM - 3:00 PM
-                                            </span>
-                                        </div>
-                                        <span className="text-primary-light fw-semibold text-md mt-4">
-                                            Sarah Johnson - CDL-B Interview
-                                        </span>
-                                    </div>
-                                    <div className="dropdown">
-                                        <button
-                                            type="button"
-                                            data-bs-toggle="dropdown"
-                                            aria-expanded="false"
-                                        >
-                                            <Icon
-                                                icon="entypo:dots-three-vertical"
-                                                className="icon text-secondary-light"
-                                            />
-                                        </button>
-                                        <ul className="dropdown-menu p-12 border bg-base shadow">
-                                            <li>
-                                                <button
-                                                    type="button"
-                                                    className="dropdown-item px-16 py-8 rounded text-secondary-light bg-hover-neutral-200 text-hover-neutral-900 d-flex align-items-center gap-10"
-                                                    data-bs-toggle="modal"
-                                                    data-bs-target="#exampleModalView"
-                                                >
-                                                    <Icon
-                                                        icon="hugeicons:view"
-                                                        className="icon text-lg line-height-1"
-                                                    />
-                                                    View
-                                                </button>
-                                            </li>
-                                            <li>
-                                                <button
-                                                    type="button"
-                                                    className="dropdown-item px-16 py-8 rounded text-secondary-light bg-hover-neutral-200 text-hover-neutral-900 d-flex align-items-center gap-10"
-                                                    data-bs-toggle="modal"
-                                                    data-bs-target="#exampleModalEdit"
-                                                >
-                                                    <Icon
-                                                        icon="lucide:edit"
-                                                        className="icon text-lg line-height-1"
-                                                    />
-                                                    Edit
-                                                </button>
-                                            </li>
-                                            <li>
-                                                <button
-                                                    type="button"
-                                                    className="delete-item dropdown-item px-16 py-8 rounded text-secondary-light bg-hover-danger-100 text-hover-danger-600 d-flex align-items-center gap-10"
-                                                    data-bs-toggle="modal"
-                                                    data-bs-target="#exampleModalDelete"
-                                                >
-                                                    <Icon
-                                                        icon="fluent:delete-24-regular"
-                                                        className="icon text-lg line-height-1"
-                                                    />
-                                                    Delete
-                                                </button>
-                                            </li>
-                                        </ul>
-                                    </div>
-                                </div>
-                                <div className="event-item d-flex align-items-center justify-content-between gap-4 pb-16 mb-16 border border-start-0 border-end-0 border-top-0">
-                                    <div className="">
-                                        <div className="d-flex align-items-center gap-10">
-                                            <span className="w-12-px h-12-px bg-info-600 rounded-circle fw-medium" />
-                                            <span className="text-secondary-light">
-                                                Friday, 9:00 AM - 10:00 AM
-                                            </span>
-                                        </div>
-                                        <span className="text-primary-light fw-semibold text-md mt-4">
-                                            Mike Wilson - Owner Operator
-                                        </span>
-                                    </div>
-                                    <div className="dropdown">
-                                        <button
-                                            type="button"
-                                            data-bs-toggle="dropdown"
-                                            aria-expanded="false"
-                                        >
-                                            <Icon
-                                                icon="entypo:dots-three-vertical"
-                                                className="icon text-secondary-light"
-                                            />
-                                        </button>
-                                        <ul className="dropdown-menu p-12 border bg-base shadow">
-                                            <li>
-                                                <button
-                                                    type="button"
-                                                    className="dropdown-item px-16 py-8 rounded text-secondary-light bg-hover-neutral-200 text-hover-neutral-900 d-flex align-items-center gap-10"
-                                                    data-bs-toggle="modal"
-                                                    data-bs-target="#exampleModalView"
-                                                >
-                                                    <Icon
-                                                        icon="hugeicons:view"
-                                                        className="icon text-lg line-height-1"
-                                                    />
-                                                    View
-                                                </button>
-                                            </li>
-                                            <li>
-                                                <button
-                                                    type="button"
-                                                    className="dropdown-item px-16 py-8 rounded text-secondary-light bg-hover-neutral-200 text-hover-neutral-900 d-flex align-items-center gap-10"
-                                                    data-bs-toggle="modal"
-                                                    data-bs-target="#exampleModalEdit"
-                                                >
-                                                    <Icon
-                                                        icon="lucide:edit"
-                                                        className="icon text-lg line-height-1"
-                                                    />
-                                                    Edit
-                                                </button>
-                                            </li>
-                                            <li>
-                                                <button
-                                                    type="button"
-                                                    className="delete-item dropdown-item px-16 py-8 rounded text-secondary-light bg-hover-danger-100 text-hover-danger-600 d-flex align-items-center gap-10"
-                                                    data-bs-toggle="modal"
-                                                    data-bs-target="#exampleModalDelete"
-                                                >
-                                                    <Icon
-                                                        icon="fluent:delete-24-regular"
-                                                        className="icon text-lg line-height-1"
-                                                    />
-                                                    Delete
-                                                </button>
-                                            </li>
-                                        </ul>
-                                    </div>
-                                </div>
-                                <div className="event-item d-flex align-items-center justify-content-between gap-4 pb-16 mb-16 border border-start-0 border-end-0 border-top-0">
-                                    <div className="">
-                                        <div className="d-flex align-items-center gap-10">
-                                            <span className="w-12-px h-12-px bg-danger-600 rounded-circle fw-medium" />
-                                            <span className="text-secondary-light">
-                                                Monday, 1:30 PM - 2:30 PM
-                                            </span>
-                                        </div>
-                                        <span className="text-primary-light fw-semibold text-md mt-4">
-                                            Lisa Brown - CDL-A Follow-up
-                                        </span>
-                                    </div>
-                                    <div className="dropdown">
-                                        <button
-                                            type="button"
-                                            data-bs-toggle="dropdown"
-                                            aria-expanded="false"
-                                        >
-                                            <Icon
-                                                icon="entypo:dots-three-vertical"
-                                                className="icon text-secondary-light"
-                                            />
-                                        </button>
-                                        <ul className="dropdown-menu p-12 border bg-base shadow">
-                                            <li>
-                                                <button
-                                                    type="button"
-                                                    className="dropdown-item px-16 py-8 rounded text-secondary-light bg-hover-neutral-200 text-hover-neutral-900 d-flex align-items-center gap-10"
-                                                    data-bs-toggle="modal"
-                                                    data-bs-target="#exampleModalView"
-                                                >
-                                                    <Icon
-                                                        icon="hugeicons:view"
-                                                        className="icon text-lg line-height-1"
-                                                    />
-                                                    View
-                                                </button>
-                                            </li>
-                                            <li>
-                                                <button
-                                                    type="button"
-                                                    className="dropdown-item px-16 py-8 rounded text-secondary-light bg-hover-neutral-200 text-hover-neutral-900 d-flex align-items-center gap-10"
-                                                    data-bs-toggle="modal"
-                                                    data-bs-target="#exampleModalEdit"
-                                                >
-                                                    <Icon
-                                                        icon="lucide:edit"
-                                                        className="icon text-lg line-height-1"
-                                                    />
-                                                    Edit
-                                                </button>
-                                            </li>
-                                            <li>
-                                                <button
-                                                    type="button"
-                                                    className="delete-item dropdown-item px-16 py-8 rounded text-secondary-light bg-hover-danger-100 text-hover-danger-600 d-flex align-items-center gap-10"
-                                                    data-bs-toggle="modal"
-                                                    data-bs-target="#exampleModalDelete"
-                                                >
-                                                    <Icon
-                                                        icon="fluent:delete-24-regular"
-                                                        className="icon text-lg line-height-1"
-                                                    />
-                                                    Delete
-                                                </button>
-                                            </li>
-                                        </ul>
-                                    </div>
-                                </div>
+                                    ))
+                                )}
                             </div>
                         </div>
                     </div>
@@ -321,7 +242,7 @@ const CalendarMainLayer = () => {
                             <div id="wrap">
                                 <div id="calendar" />
                                 <div style={{ clear: "both" }} />
-                                <Calendar />
+                                <Calendar events={calendarEvents} />
                             </div>
                         </div>
                     </div>
