@@ -1,14 +1,77 @@
 import { Icon } from '@iconify/react/dist/iconify.js'
-import React from 'react'
-import { Link } from 'react-router-dom'
+import React, { useState, useEffect } from 'react'
+import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 
 const ForgotPasswordLayer = () => {
+    const [email, setEmail] = useState('');
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState('');
+    const [success, setSuccess] = useState(false);
+    const [successMessage, setSuccessMessage] = useState('');
+    const [searchParams] = useSearchParams();
+    const navigate = useNavigate();
+
+    useEffect(() => {
+        // Check if there's a token in the URL (from email link)
+        let token = searchParams.get('token');
+        
+        // If no token found with equals sign, try to extract from URL directly
+        if (!token) {
+            const url = window.location.href;
+            const tokenMatch = url.match(/token([a-zA-Z0-9]+)/);
+            if (tokenMatch) {
+                token = tokenMatch[1];
+            }
+        }
+        
+        console.log('ForgotPasswordLayer: Token found in URL:', token);
+        if (token) {
+            // Redirect to reset password page with the token
+            console.log('ForgotPasswordLayer: Redirecting to reset-password with token');
+            // Use window.location.replace for more reliable redirection
+            window.location.replace(`/reset-password?token=${token}`);
+        }
+    }, [searchParams, navigate]);
+
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        setError('');
+        setLoading(true);
+
+        try {
+            const response = await fetch('https://admin.truckstaffer.com/api/forget/submit', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ email }),
+            });
+
+            const data = await response.json();
+            console.log('Forgot password API response:', data);
+
+            if (response.ok && (data.status || data.success)) {
+                // Store email for password reset
+                localStorage.setItem('resetEmail', email);
+                setSuccess(true);
+                setSuccessMessage(data.message || 'Password reset instructions sent to your email.');
+            } else {
+                setError(data.message || 'Failed to send reset email. Please try again.');
+            }
+        } catch (err) {
+            console.error('Forgot password error:', err);
+            setError('Network error. Please check your connection and try again.');
+        } finally {
+            setLoading(false);
+        }
+    };
+
     return (
         <>
             <section className="auth forgot-password-page bg-base d-flex flex-wrap">
                 <div className="auth-left d-lg-block d-none">
                     <div className="d-flex align-items-center flex-column h-100 justify-content-center">
-                        <img src="assets/images/auth/forgot-pass-img.png" alt="" />
+                        <img src="/assets/images/auth/forgot-pass-img.png" alt="Forgot Password" />
                     </div>
                 </div>
                 <div className="auth-right py-32 px-24 d-flex flex-column justify-content-center">
@@ -20,7 +83,7 @@ const ForgotPasswordLayer = () => {
                                 send you a link to reset your password.
                             </p>
                         </div>
-                        <form action="#">
+                        <form onSubmit={handleSubmit}>
                             <div className="icon-field">
                                 <span className="icon top-50 translate-middle-y">
                                     <Icon icon="mage:email" />
@@ -29,15 +92,29 @@ const ForgotPasswordLayer = () => {
                                     type="email"
                                     className="form-control h-56-px bg-neutral-50 radius-12"
                                     placeholder="Enter Email"
+                                    value={email}
+                                    onChange={(e) => setEmail(e.target.value)}
+                                    required
                                 />
                             </div>
+                            {error && (
+                                <div className="alert alert-danger mt-2" role="alert">
+                                    <strong>Error:</strong> {error}
+                                </div>
+                            )}
                             <button
-                                type="button"
+                                type="submit"
                                 className="btn btn-primary text-sm btn-sm px-12 py-16 w-100 radius-12 mt-32"
-                                data-bs-toggle="modal"
-                                data-bs-target="#exampleModal"
+                                disabled={loading}
                             >
-                                Continue
+                                {loading ? (
+                                    <>
+                                        <span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                                        Sending...
+                                    </>
+                                ) : (
+                                    'Continue'
+                                )}
                             </button>
                             <div className="text-center">
                                 <Link to="/sign-in" className="text-primary-600 fw-bold mt-24">
@@ -56,43 +133,52 @@ const ForgotPasswordLayer = () => {
                     </div>
                 </div>
             </section>
-            {/* Modal */}
-            <div
-                className="modal fade"
-                id="exampleModal"
-                tabIndex={-1}
-                aria-hidden="true"
-            >
-                <div className="modal-dialog modal-dialog modal-dialog-centered">
-                    <div className="modal-content radius-16 bg-base">
-                        <div className="modal-body p-40 text-center">
-                            <div className="mb-32">
-                                <img src="assets/images/auth/envelop-icon.png" alt="" />
-                            </div>
-                            <h6 className="mb-12">Verify your Email</h6>
-                            <p className="text-secondary-light text-sm mb-0">
-                                Thank you, check your email for instructions to reset your password
-                            </p>
-                            <button
-                                type="button"
-                                className="btn btn-primary text-sm btn-sm px-12 py-16 w-100 radius-12 mt-32"
-                            >
-                                Skip
-                            </button>
-                            <div className="mt-32 text-sm">
-                                <p className="mb-0">
-                                    Don’t receive an email?{" "}
-                                    <Link to="/resend" className="text-primary-600 fw-semibold">
-                                        Resend
-                                    </Link>
+            {/* Success Modal */}
+            {success && (
+                <div
+                    className="modal fade show"
+                    style={{ display: 'block' }}
+                    tabIndex={-1}
+                    aria-hidden="true"
+                >
+                    <div className="modal-dialog modal-dialog-centered">
+                        <div className="modal-content radius-16 bg-base">
+                            <div className="modal-body p-40 text-center">
+                                <div className="mb-32">
+                                    <Icon icon="ri:check-line" className="text-success" style={{ fontSize: '3rem' }} />
+                                </div>
+                                <h6 className="mb-12">Check your Email</h6>
+                                <p className="text-secondary-light text-sm mb-0">
+                                    {successMessage || `We've sent password reset instructions to ${email}`}
                                 </p>
+                                <button
+                                    type="button"
+                                    className="btn btn-primary text-sm btn-sm px-12 py-16 w-100 radius-12 mt-32"
+                                    onClick={() => window.location.href = '/sign-in'}
+                                >
+                                    Back to Sign In
+                                </button>
+                                <div className="mt-32 text-sm">
+                                    <p className="mb-0">
+                                        Don't receive an email?{" "}
+                                        <button 
+                                            type="button" 
+                                            className="text-primary-600 fw-semibold border-0 bg-transparent"
+                                            onClick={() => {
+                                                setSuccess(false);
+                                                setEmail('');
+                                            }}
+                                        >
+                                            Try again
+                                        </button>
+                                    </p>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
-            </div>
+            )}
         </>
-
     )
 }
 

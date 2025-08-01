@@ -186,15 +186,6 @@ const MasterLayout = ({ children }) => {
                 <span>My Profile</span>
               </NavLink>
             </li>
-            <li>
-              <NavLink
-                to='/calendar-main'
-                className={(navData) => (navData.isActive ? "active-page" : "")}
-              >
-                <Icon icon='solar:calendar-outline' className='menu-icon' />
-                <span>Calendar</span>
-              </NavLink>
-            </li>
           </ul>
         </div>
       </aside>

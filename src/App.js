@@ -14,6 +14,8 @@ import ErrorPage from "./pages/ErrorPage";
 import ViewProfilePage from "./pages/ViewProfilePage";
 import SignInPage from "./pages/SignInPage";
 import SignUpPage from "./pages/SignUpPage";
+import ForgotPasswordPage from "./pages/ForgotPasswordPage";
+import ResetPasswordPage from "./pages/ResetPasswordPage";
 import ApplicationSummaryPage from "./pages/ApplicationSummaryPage";
 import GoogleAuthTest from "./components/GoogleAuthTest";
 import GoogleOAuthDebug from "./components/GoogleOAuthDebug";
@@ -43,6 +45,8 @@ function App() {
                 <Routes>
                     <Route exact path="/sign-in" element={<SignInPage />} />
                     <Route exact path="/sign-up" element={<SignUpPage />} />
+                    <Route exact path="/forgot-password" element={<ForgotPasswordPage />} />
+                    <Route exact path="/reset-password" element={<ResetPasswordPage />} />
                     <Route exact path="/google-test" element={<GoogleAuthTest />} />
                     <Route exact path="/google-debug" element={<GoogleOAuthDebug />} />
                     <Route

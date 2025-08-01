@@ -44,6 +44,23 @@ const SignUpLayer = () => {
       if (data.status && data.token) {
         localStorage.setItem("token", data.token);
         console.log("💾 Token saved to localStorage:", localStorage.getItem("token"));
+        
+        // Send welcome email
+        try {
+          await fetch("https://admin.truckstaffer.com/api/send-welcome-email", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              name,
+              email
+            })
+          });
+          console.log("📧 Welcome email sent successfully");
+        } catch (emailError) {
+          console.log("📧 Welcome email failed to send:", emailError);
+          // Don't block the sign-up process if email fails
+        }
+        
         console.log("🏠 Navigating to home page");
         navigate("/");
       } else {
