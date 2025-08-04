@@ -5,7 +5,7 @@ import { GoogleLogin } from '@react-oauth/google';
 import { jwtDecode } from "jwt-decode";
 
 const SignUpLayer = () => {
-  console.log("🚀 SignUpLayer component rendered");
+  // console.log("🚀 SignUpLayer component rendered");
   
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -20,12 +20,35 @@ const SignUpLayer = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log("📝 Regular sign-up form submitted");
+    // console.log("📝 Regular sign-up form submitted");
+
+    
+  // 🚨 Frontend Validation
+  if (!name.trim()) {
+    setError("Name is required");
+    return;
+  }
+
+  if (!email.includes("@") || !email.includes(".")) {
+    setError("Invalid email address");
+    return;
+  }
+
+  if (password.length < 8) {
+    setError("Password must be at least 8 characters");
+    return;
+  }
+
+  if (password !== passwordConfirmation) {
+    setError("Passwords do not match");
+    return;
+  }
+
     setError("");
     setLoading(true);
     
     try {
-      console.log("🌐 Sending sign-up request to API...");
+      // console.log("🌐 Sending sign-up request to API...");
       const res = await fetch("https://admin.truckstaffer.com/api/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -37,9 +60,9 @@ const SignUpLayer = () => {
         })
       });
       
-      console.log("📡 API response status:", res.status);
+      // console.log("📡 API response status:", res.status);
       const data = await res.json();
-      console.log("📦 API sign-up response:", data);
+      // console.log("📦 API sign-up response:", data);
       
       if (data.status && data.token) {
         localStorage.setItem("token", data.token);
@@ -55,18 +78,26 @@ const SignUpLayer = () => {
               email
             })
           });
-          console.log("📧 Welcome email sent successfully");
+          // console.log("📧 Welcome email sent successfully");
         } catch (emailError) {
           console.log("📧 Welcome email failed to send:", emailError);
           // Don't block the sign-up process if email fails
         }
         
-        console.log("🏠 Navigating to home page");
+        // console.log("🏠 Navigating to home page");
         navigate("/");
       } else {
-        setError(data.message || "Registration failed");
-        console.log("❌ Sign-up failed, error message:", data.message);
-      }
+  if (data?.errors) {
+    // Convert error object into a readable string
+    const messages = Object.values(data.errors).flat().join(" ");
+    setError(messages || "Validation failed");
+    // console.log("❌ Sign-up failed, server error:", messages);
+  } else {
+    setError(data.message || "Registration failed");
+    // console.log("❌ Sign-up failed, error message:", data.message);
+  }
+}
+
     } catch (err) {
       setError("Network error");
       console.log("🌐 Network error during sign-up:", err);
@@ -265,7 +296,7 @@ const SignUpLayer = () => {
             </button>
             
             <div className=' center-border-horizontal text-center'>
-              <span className='bg-base z-1 px-4'>Or sign up with</span>
+              {/* <span className='bg-base z-1 px-4'>Or sign up with</span> */}
             </div>
             
             <div className='mb-3 d-flex align-items-center justify-content-center gap-4 flex-wrap'>
