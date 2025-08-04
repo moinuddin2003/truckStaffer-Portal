@@ -38,11 +38,14 @@ const SignInLayer = () => {
 
       if (data.status && data.token) {
         localStorage.setItem("token", data.token);
-        console.log(
-          "💾 Token saved to localStorage:",
-          localStorage.getItem("token")
-        );
-        console.log("🏠 Navigating to home page");
+        // console.log(
+        //   "💾 Token saved to localStorage:",
+        //   localStorage.getItem("token")
+        // );
+
+        // Showing token saved in localStorage
+
+        // console.log("🏠 Navigating to home page");
         navigate("/");
       } else {
         if (data.errors) {

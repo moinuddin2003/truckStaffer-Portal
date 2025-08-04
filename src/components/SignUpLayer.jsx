@@ -159,7 +159,7 @@ const SignUpLayer = () => {
       console.log("👤 Stored user:", mockResponse.user);
       
       console.log("✅ Google Sign-Up successful, navigating to home...");
-      console.log("🏠 Navigating to home page");
+      // console.log("🏠 Navigating to home page");
       // Force navigation to home page
       window.location.href = "/";
       
