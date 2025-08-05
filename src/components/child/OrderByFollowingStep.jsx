@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import Swal from 'sweetalert2';
 
 const initialForm = {
   fullName: "",
@@ -66,7 +67,7 @@ const OrderByFollowingStep = () => {
   const [currentStep, setCurrentStep] = useState(1);
   const [form, setForm] = useState(initialForm);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
+  const [error, setError] = useState(""); // Keep for logic, but don't show in UI
   const [completedSteps, setCompletedSteps] = useState([]);
   const [applicationId, setApplicationId] = useState(null);
   const [showFinalValidation, setShowFinalValidation] = useState(false);
@@ -339,6 +340,11 @@ const OrderByFollowingStep = () => {
   const submitStep = async (step) => {
     const token = localStorage.getItem("token");
     if (!token) {
+      Swal.fire({
+        icon: 'error',
+        title: 'Authentication Required',
+        text: 'Please log in to continue.'
+      });
       setError("Authentication required");
       return false;
     }
@@ -347,18 +353,21 @@ const OrderByFollowingStep = () => {
     setError("");
 
     try {
-          const stepData = getStepData(step);
-    console.log(`Submitting step ${step} data:`, stepData);
-    console.log(`Current applicationId:`, applicationId);
+      const stepData = getStepData(step);
+      // console.log(`Submitting step ${step} data:`, stepData); 
+      // returning complete data object from getStepData() filled in step1
+      // console.log(`Current applicationId:`, applicationId);
+      //currently it is null 
 
-    // For step 1, we don't have applicationId yet, so use a different endpoint
-    const url = step === 1 
-      ? `https://admin.truckstaffer.com/api/application/step${step}`
-      : `https://admin.truckstaffer.com/api/application/${applicationId}/step${step}`;
+      // For step 1, we don't have applicationId yet, so use a different endpoint
+      const url = step === 1 
+        ? `https://admin.truckstaffer.com/api/application/step${step}`
+        : `https://admin.truckstaffer.com/api/application/${applicationId}/step${step}`;
 
-    console.log(`Making request to:`, url);
+      // console.log(`Making request to:`, url);
+      // Making request to: https://admin.truckstaffer.com/api/application/step1 running at step 1 with error
 
-    const response = await fetch(url, {
+      const response = await fetch(url, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -367,32 +376,38 @@ const OrderByFollowingStep = () => {
         body: JSON.stringify(stepData),
       });
 
-      console.log(`Step ${step} response status:`, response.status);
-      console.log(`Step ${step} response headers:`, response.headers);
+      //console.log(`Step ${step} response status:`, response.status);
+      //  return 422 or 200 depens on the step
+      // console.log(`Step ${step} response headers:`, response.headers);
 
       // Check if response is JSON
       const contentType = response.headers.get("content-type");
       if (!contentType || !contentType.includes("application/json")) {
         // Handle non-JSON response (like HTML error pages)
         const textResponse = await response.text();
-        console.log(`Step ${step} non-JSON response:`, textResponse);
-        
+        let errorMsg = `Server error (${response.status}). Please try again.`;
         if (response.status === 500) {
-          setError("Server error: ApplicationController not found. Please contact the backend team to create the missing controller.");
+          errorMsg = "Server error: ApplicationController not found. Please contact the backend team to create the missing controller.";
         } else if (response.status === 401) {
-          setError("Authentication failed. Please log in again.");
+          errorMsg = "Authentication failed. Please log in again.";
           localStorage.removeItem("token");
           navigate("/sign-in");
         } else if (response.status === 403) {
-          setError("Access denied. You don't have permission to perform this action.");
-        } else {
-          setError(`Server error (${response.status}). Please try again.`);
+          errorMsg = "Access denied. You don't have permission to perform this action.";
         }
+        Swal.fire({
+          icon: 'error',
+          title: 'Server Error',
+          text: errorMsg,
+          confirmButtonColor: '#3085d6',
+          confirmButtonText: 'OK'
+        });
+        setError(errorMsg);
         return false;
       }
 
       const data = await response.json();
-      console.log(`Step ${step} API response:`, data);
+      // console.log(`Step ${step} API response:`, data);
 
       if (response.ok && (data.status || data.success)) {
         // If this is step 1 and we get a successful response, extract the application ID
@@ -412,19 +427,46 @@ const OrderByFollowingStep = () => {
         setCompletedSteps(prev => [...prev, step]);
         return true;
       } else {
-        setError(data.message || `Failed to submit step ${step}`);
+        // Show exact error message from API, including validation errors
+        let errorMsg = data.message || data.error || `Failed to submit step ${step}`;
+        // If validation errors exist, show them in detail
+        if (data.errors && typeof data.errors === 'object') {
+          errorMsg = "Please fix the following errors:";
+          errorMsg += "<ul style='text-align:left; margin-top: 10px;'>";
+          Object.entries(data.errors).forEach(([field, msgs]) => {
+            const fieldName = field.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+            const message = Array.isArray(msgs) ? msgs.join(', ') : msgs;
+            errorMsg += `<li><strong>${fieldName}:</strong> ${message}</li>`;
+          });
+          errorMsg += "</ul>";
+        }
+        Swal.fire({
+          icon: 'error',
+          title: 'Error',
+          html: errorMsg,
+          confirmButtonColor: '#3085d6',
+          confirmButtonText: 'OK'
+        });
+        setError(errorMsg);
         return false;
       }
     } catch (err) {
       console.error(`Error submitting step ${step}:`, err);
       
+      let errorMsg = "An unexpected error occurred. Please try again.";
       if (err.name === 'SyntaxError') {
-        setError("Server returned invalid response. Please try again later.");
+        errorMsg = "Server returned invalid response. Please try again later.";
       } else if (err.name === 'TypeError' && err.message.includes('fetch')) {
-        setError("Network error. Please check your internet connection.");
-      } else {
-        setError("An unexpected error occurred. Please try again.");
+        errorMsg = "Network error. Please check your internet connection.";
       }
+      Swal.fire({
+        icon: 'error',
+        title: 'Connection Error',
+        text: errorMsg,
+        confirmButtonColor: '#3085d6',
+        confirmButtonText: 'OK'
+      });
+      setError(errorMsg);
       return false;
     } finally {
       setLoading(false);
@@ -484,12 +526,6 @@ const OrderByFollowingStep = () => {
             <p className="text-neutral-500">
               Please fill out all required information to begin your application.
             </p>
-
-            {error && (
-              <div className="alert alert-danger mb-4" role="alert">
-                {error}
-              </div>
-            )}
 
             <div className="form-wizard">
               <form>
