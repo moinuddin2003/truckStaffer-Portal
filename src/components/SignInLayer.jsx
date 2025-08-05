@@ -1,8 +1,9 @@
 import { Icon } from "@iconify/react/dist/iconify.js";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { GoogleLogin } from "@react-oauth/google";
 import { jwtDecode } from "jwt-decode";
+import Swal from "sweetalert2";
 
 const SignInLayer = () => {
   // console.log("🚀 SignInLayer component rendered");
@@ -50,9 +51,25 @@ const SignInLayer = () => {
       } else {
         if (data.errors) {
           setFieldErrors(data.errors);
-          setError("Validation errors. Please check the fields.");
+          // Show validation errors in SweetAlert
+          const errorMessages = Object.values(data.errors).join('\n');
+          Swal.fire({
+            icon: 'error',
+            title: 'Validation Error',
+            text: errorMessages,
+            confirmButtonColor: '#3085d6',
+            confirmButtonText: 'OK'
+          });
         } else {
           setError(data.message || "Login failed");
+          // Show general error in SweetAlert
+          Swal.fire({
+            icon: 'error',
+            title: 'Login Failed',
+            text: data.message || "Login failed",
+            confirmButtonColor: '#3085d6',
+            confirmButtonText: 'OK'
+          });
         }
 
         // console.log("❌ Sign-in failed, error message:", data.message); Now data.message shows in UI just above RememberMe
@@ -60,6 +77,14 @@ const SignInLayer = () => {
     } catch (err) {
       setError("Network error");
       console.log("🌐 Network error during sign-in:", err);
+      // Show network error in SweetAlert
+      Swal.fire({
+        icon: 'error',
+        title: 'Network Error',
+        text: 'Unable to connect to the server. Please check your internet connection and try again.',
+        confirmButtonColor: '#3085d6',
+        confirmButtonText: 'OK'
+      });
     } finally {
       setLoading(false);
     }
@@ -77,6 +102,14 @@ const SignInLayer = () => {
       if (!credential) {
         console.error("❌ No credential in response");
         setError("Google Sign-In failed - no credential received");
+        // Show Google sign-in error in SweetAlert
+        Swal.fire({
+          icon: 'error',
+          title: 'Google Sign-In Failed',
+          text: 'No credential received from Google. Please try again.',
+          confirmButtonColor: '#3085d6',
+          confirmButtonText: 'OK'
+        });
         return;
       }
 
@@ -117,13 +150,30 @@ const SignInLayer = () => {
       console.log("📦 Stored token:", mockResponse.token);
       console.log("👤 Stored user:", mockResponse.user);
 
-      // console.log("✅ Google Sign-In successful, navigating to home..."); not working
-      // console.log("🏠 Navigating to home page");
-      // Force navigation to home page
-      window.location.href = "/";
+      // Show success message in SweetAlert
+      Swal.fire({
+        icon: 'success',
+        title: 'Welcome!',
+        text: `Successfully signed in as ${userData.name}`,
+        timer: 2000,
+        showConfirmButton: false
+      }).then(() => {
+        // console.log("✅ Google Sign-In successful, navigating to home..."); not working
+        // console.log("🏠 Navigating to home page");
+        // Force navigation to home page
+        window.location.href = "/";
+      });
     } catch (err) {
       console.error("❌ Google Sign-In error:", err);
       setError("Google Sign-In failed");
+      // Show Google sign-in error in SweetAlert
+      Swal.fire({
+        icon: 'error',
+        title: 'Google Sign-In Failed',
+        text: 'An error occurred during Google sign-in. Please try again.',
+        confirmButtonColor: '#3085d6',
+        confirmButtonText: 'OK'
+      });
     } finally {
       setGoogleLoading(false);
     }
@@ -133,19 +183,38 @@ const SignInLayer = () => {
     console.error("❌ Google Sign-In error");
     setError("Google Sign-In failed");
     setGoogleLoading(false);
+    // Show Google sign-in error in SweetAlert
+    Swal.fire({
+      icon: 'error',
+      title: 'Google Sign-In Failed',
+      text: 'Google sign-in was cancelled or failed. Please try again.',
+      confirmButtonColor: '#3085d6',
+      confirmButtonText: 'OK'
+    });
   };
+
+  // Track screen width for responsive image rendering
+  const [isLargeScreen, setIsLargeScreen] = useState(window.innerWidth > 700);
+
+  useEffect(() => {
+    const handleResize = () => setIsLargeScreen(window.innerWidth > 700);
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
 
   return (
     <section className="auth d-flex flex-wrap">
-      <div className="auth-left d-lg-block d-none">
-        <div
-          className="d-flex align-items-center flex-column h-100 justify-content-center p-0 m-0 w-100"
-          style={{ position: "relative" }}
-        >
-          <img src="/login.jpg" alt="main-website-logo" />
-          <div className="auth-left-overlay"></div>
+      {isLargeScreen && (
+        <div className="auth-left">
+          <div
+            className="d-flex align-items-center flex-column h-100 justify-content-center p-0 m-0 w-100"
+            style={{ position: "relative" }}
+          >
+            <img src="/login.jpg" alt="main-website-logo" />
+            <div className="auth-left-overlay"></div>
+          </div>
         </div>
-      </div>
+      )}
       <div className="auth-right py-32 px-24 d-flex flex-column justify-content-center">
         <div className="max-w-464-px mx-auto w-100">
           <img
@@ -174,9 +243,9 @@ const SignInLayer = () => {
                 }}
                 required
               />
-              {fieldErrors.email && (
+              {/* {fieldErrors.email && (
                 <div className="text-danger mt-1">{fieldErrors.email}</div>
-              )}
+              )} */}
             </div>
 
             <div className="position-relative mb-20">
@@ -196,9 +265,9 @@ const SignInLayer = () => {
                   }}
                   required
                 />
-                {fieldErrors.password && (
+                {/* {fieldErrors.password && (
                   <div className="text-danger mt-1">{fieldErrors.password}</div>
-                )}
+                )} */}
               </div>
               <span
                 className={`toggle-password ${
