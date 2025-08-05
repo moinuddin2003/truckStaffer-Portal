@@ -139,7 +139,38 @@ const OrderByFollowingStep = () => {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setForm((prev) => ({ ...prev, [name]: value }));
+    
+    // Apply specific validations based on field type
+    let validatedValue = value;
+    
+    switch (name) {
+      case 'phone':
+        // Only allow numbers, spaces, dashes, and parentheses for phone
+        validatedValue = value.replace(/[^0-9\s\-\(\)]/g, '');
+        break;
+      case 'ownerName':
+      case 'fullName':
+        // Only allow letters, spaces, and common name characters
+        validatedValue = value.replace(/[^a-zA-Z\s\-'\.]/g, '');
+        break;
+      case 'businessEIN':
+        // Only allow numbers and dashes for EIN
+        validatedValue = value.replace(/[^0-9\-]/g, '');
+        break;
+      case 'mcDotNumber':
+        // Only allow numbers and letters for MC/DOT number
+        validatedValue = value.replace(/[^a-zA-Z0-9]/g, '');
+        break;
+      case 'yearsExperience':
+      case 'numEmployees':
+        // Only allow numbers
+        validatedValue = value.replace(/[^0-9]/g, '');
+        break;
+      default:
+        validatedValue = value;
+    }
+    
+    setForm((prev) => ({ ...prev, [name]: validatedValue }));
   };
 
   // Handle adding a new VIN
@@ -177,15 +208,10 @@ const OrderByFollowingStep = () => {
   };
 
   const handleMaterialsChange = (e) => {
-    const { value, checked } = e.target;
+    const { value } = e.target;
     setForm((prev) => {
-      const materials = new Set(prev.materialsHauled);
-      if (checked) {
-        materials.add(value);
-      } else {
-        materials.delete(value);
-      }
-      return { ...prev, materialsHauled: Array.from(materials) };
+      // For radio buttons, just set the selected value
+      return { ...prev, materialsHauled: [value] };
     });
   };
 
@@ -205,27 +231,165 @@ const OrderByFollowingStep = () => {
     setForm((prev) => ({ ...prev, businessDocs: Array.from(e.target.files) }));
   };
 
+  // Validation functions
+  const validatePhoneNumber = (phone) => {
+    // Remove all non-digit characters for validation
+    const digitsOnly = phone.replace(/\D/g, '');
+    return digitsOnly.length >= 10 && digitsOnly.length <= 15;
+  };
+
+  const validateName = (name) => {
+    // Must contain at least 2 characters and only letters, spaces, hyphens, apostrophes, and periods
+    const nameRegex = /^[a-zA-Z\s\-'\.]{2,}$/;
+    return nameRegex.test(name.trim());
+  };
+
+  const validateEmail = (email) => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+  };
+
   // Validate current step
   const validateCurrentStep = () => {
     switch (currentStep) {
       case 1:
-        // Only require basic contact info
-        return form.fullName && form.phone && form.email;
+        // Validate only fields marked with * in Step 1
+        if (!form.fullName || !validateName(form.fullName)) {
+          Swal.fire({
+            icon: 'error',
+            title: 'Invalid Full Name',
+            text: 'Please enter a valid full name (letters only, minimum 2 characters).',
+            confirmButtonColor: '#3085d6',
+            confirmButtonText: 'OK'
+          });
+          return false;
+        }
+        if (!form.phone || !validatePhoneNumber(form.phone)) {
+          Swal.fire({
+            icon: 'error',
+            title: 'Invalid Phone Number',
+            text: 'Please enter a valid phone number (minimum 10 digits).',
+            confirmButtonColor: '#3085d6',
+            confirmButtonText: 'OK'
+          });
+          return false;
+        }
+        if (!form.email || !validateEmail(form.email)) {
+          Swal.fire({
+            icon: 'error',
+            title: 'Invalid Email',
+            text: 'Please enter a valid email address.',
+            confirmButtonColor: '#3085d6',
+            confirmButtonText: 'OK'
+          });
+          return false;
+        }
+        return true;
       case 2:
-        // Only require ownership and equipment type
-        return form.ownership && form.equipmentType;
+        // Validate only fields marked with * in Step 2
+        if (!form.ownership) {
+          Swal.fire({
+            icon: 'error',
+            title: 'Ownership Status Required',
+            text: 'Please select whether you currently own or lease a dump truck.',
+            confirmButtonColor: '#3085d6',
+            confirmButtonText: 'OK'
+          });
+          return false;
+        }
+        if (!form.equipmentType) {
+          Swal.fire({
+            icon: 'error',
+            title: 'Equipment Type Required',
+            text: 'Please enter your equipment type (e.g., Tri-Axle, Quad-Axle, etc.).',
+            confirmButtonColor: '#3085d6',
+            confirmButtonText: 'OK'
+          });
+          return false;
+        }
+        return true;
       case 3:
-        // Only require CDL status and experience
-        return form.cdlStatus && form.yearsExperience;
+        // Validate only fields marked with * in Step 3
+        if (!form.cdlStatus) {
+          Swal.fire({
+            icon: 'error',
+            title: 'CDL Status Required',
+            text: 'Please select your CDL status.',
+            confirmButtonColor: '#3085d6',
+            confirmButtonText: 'OK'
+          });
+          return false;
+        }
+        if (!form.yearsExperience) {
+          Swal.fire({
+            icon: 'error',
+            title: 'Years of Experience Required',
+            text: 'Please enter your years in trucking/dump hauling business.',
+            confirmButtonColor: '#3085d6',
+            confirmButtonText: 'OK'
+          });
+          return false;
+        }
+        return true;
       case 4:
-        // Only require employee count and work radius
-        return form.numEmployees && form.workRadius;
+        // Validate only fields marked with * in Step 4
+        if (!form.numEmployees) {
+          Swal.fire({
+            icon: 'error',
+            title: 'Number of Employees Required',
+            text: 'Please enter the number of employees/drivers (including yourself).',
+            confirmButtonColor: '#3085d6',
+            confirmButtonText: 'OK'
+          });
+          return false;
+        }
+        if (!form.workRadius) {
+          Swal.fire({
+            icon: 'error',
+            title: 'Work Radius Required',
+            text: 'Please select your preferred work radius.',
+            confirmButtonColor: '#3085d6',
+            confirmButtonText: 'OK'
+          });
+          return false;
+        }
+        return true;
       case 5:
-        // Only require insurance coverage
-        return form.insuranceCoverage;
+        // Validate only fields marked with * in Step 5
+        if (!form.insuranceCoverage) {
+          Swal.fire({
+            icon: 'error',
+            title: 'Insurance Coverage Required',
+            text: 'Please select your current insurance coverage.',
+            confirmButtonColor: '#3085d6',
+            confirmButtonText: 'OK'
+          });
+          return false;
+        }
+        return true;
       case 6:
-        // Only require felony and drug testing
-        return form.felony && form.drugTesting;
+        // Validate only fields marked with * in Step 6
+        if (!form.felony) {
+          Swal.fire({
+            icon: 'error',
+            title: 'Felony Conviction Status Required',
+            text: 'Please indicate whether you have ever been convicted of a felony or major traffic violation.',
+            confirmButtonColor: '#3085d6',
+            confirmButtonText: 'OK'
+          });
+          return false;
+        }
+        if (!form.drugTesting) {
+          Swal.fire({
+            icon: 'error',
+            title: 'Drug Testing Willingness Required',
+            text: 'Please indicate whether you are willing to undergo drug testing if required.',
+            confirmButtonColor: '#3085d6',
+            confirmButtonText: 'OK'
+          });
+          return false;
+        }
+        return true;
       case 7:
         // Optional step - always valid
         return true;
@@ -424,7 +588,13 @@ const OrderByFollowingStep = () => {
           }
         }
         
-        setCompletedSteps(prev => [...prev, step]);
+        // Only add step to completedSteps if it's not already there
+        setCompletedSteps(prev => {
+          if (!prev.includes(step)) {
+            return [...prev, step];
+          }
+          return prev;
+        });
         return true;
       } else {
         // Show exact error message from API, including validation errors
@@ -601,31 +771,83 @@ const OrderByFollowingStep = () => {
                     <div className="row gy-3">
                       <div className="col-sm-6">
                         <label className="form-label">Full Name*</label>
-                        <input type="text" className="form-control" name="fullName" value={form.fullName} onChange={handleChange} required />
+                        <input 
+                          type="text" 
+                          className="form-control" 
+                          name="fullName" 
+                          value={form.fullName} 
+                          onChange={handleChange} 
+                          placeholder="Enter full name (letters only)"
+                          required 
+                        />
                       </div>
                       <div className="col-sm-6">
                         <label className="form-label">Business/Company Name</label>
-                        <input type="text" className="form-control" name="companyName" value={form.companyName} onChange={handleChange} />
+                        <input 
+                          type="text" 
+                          className="form-control" 
+                          name="companyName" 
+                          value={form.companyName} 
+                          onChange={handleChange} 
+                          placeholder="Enter company name"
+                        />
                       </div>
                       <div className="col-12">
                         <label className="form-label">Company Address</label>
-                        <input type="text" className="form-control" name="companyAddress" value={form.companyAddress} onChange={handleChange} />
+                        <input 
+                          type="text" 
+                          className="form-control" 
+                          name="companyAddress" 
+                          value={form.companyAddress} 
+                          onChange={handleChange} 
+                          placeholder="Enter company address"
+                        />
                       </div>
                       <div className="col-sm-6">
                         <label className="form-label">Owner's Name</label>
-                        <input type="text" className="form-control" name="ownerName" value={form.ownerName} onChange={handleChange} />
+                        <input 
+                          type="text" 
+                          className="form-control" 
+                          name="ownerName" 
+                          value={form.ownerName} 
+                          onChange={handleChange} 
+                          placeholder="Enter owner name (letters only)"
+                        />
                       </div>
                       <div className="col-sm-6">
                         <label className="form-label">Business EIN</label>
-                        <input type="text" className="form-control" name="businessEIN" value={form.businessEIN} onChange={handleChange} />
+                        <input 
+                          type="text" 
+                          className="form-control" 
+                          name="businessEIN" 
+                          value={form.businessEIN} 
+                          onChange={handleChange} 
+                          placeholder="Enter EIN (numbers and dashes only)"
+                        />
                       </div>
                       <div className="col-sm-6">
                         <label className="form-label">Phone*</label>
-                        <input type="text" className="form-control" name="phone" value={form.phone} onChange={handleChange} required />
+                        <input 
+                          type="text" 
+                          className="form-control" 
+                          name="phone" 
+                          value={form.phone} 
+                          onChange={handleChange} 
+                          placeholder="Enter phone number (minimum 10 digits)"
+                          required 
+                        />
                       </div>
                       <div className="col-sm-6">
                         <label className="form-label">Email*</label>
-                        <input type="email" className="form-control" name="email" value={form.email} onChange={handleChange} required />
+                        <input 
+                          type="email" 
+                          className="form-control" 
+                          name="email" 
+                          value={form.email} 
+                          onChange={handleChange} 
+                          placeholder="Enter valid email address"
+                          required 
+                        />
                       </div>
                       <div className="col-12">
                         <label className="form-label">Company Website</label>
@@ -644,7 +866,14 @@ const OrderByFollowingStep = () => {
                       </div>
                       <div className="col-sm-6">
                         <label className="form-label">MC or DOT Number</label>
-                        <input type="text" className="form-control" name="mcDotNumber" value={form.mcDotNumber} onChange={handleChange} />
+                        <input 
+                          type="text" 
+                          className="form-control" 
+                          name="mcDotNumber" 
+                          value={form.mcDotNumber} 
+                          onChange={handleChange} 
+                          placeholder="Enter MC/DOT number (letters and numbers only)"
+                        />
                       </div>
                       <div className="col-12">
                         <label className="form-label">How did you hear about TruckStaffer?</label>
@@ -809,10 +1038,11 @@ const OrderByFollowingStep = () => {
                             <div key={mat} className="form-check">
                               <input
                                 className="form-check-input"
-                                type="checkbox"
+                                type="radio"
+                                name="materialsHauled"
                                 id={`mat-${mat}`}
                                 value={mat}
-                                checked={form.materialsHauled.includes(mat)}
+                                checked={form.materialsHauled.length === 1 && form.materialsHauled[0] === mat}
                                 onChange={handleMaterialsChange}
                               />
                               <label className="form-check-label" htmlFor={`mat-${mat}`}>{mat}</label>
