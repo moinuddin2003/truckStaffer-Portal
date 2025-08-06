@@ -268,13 +268,48 @@ const OrderByFollowingStep = () => {
   const validateCurrentStep = () => {
     switch (currentStep) {
       case 1:
-        // Validate only fields marked with * in Step 1
+        // Attractive SweetAlert for all required fields
         if (!form.fullName || !validateName(form.fullName)) {
           Swal.fire({
             icon: 'error',
-            title: 'Invalid Full Name',
-            text: 'Please enter a valid full name (letters only, minimum 2 characters).',
-            confirmButtonColor: '#3085d6',
+            title: '<span style="color:#d33;font-weight:700;">Invalid Full Name</span>',
+            html: `<div style="font-size:1.1em;color:#333;">Please enter a valid full name (letters only, minimum 2 characters).</div>`,
+            background: '#fff6f6',
+            iconColor: '#d33',
+            showClass: { popup: 'animate__animated animate__shakeX' },
+            width: 400,
+            backdrop: 'rgba(220,53,69,0.08)',
+            confirmButtonColor: '#d33',
+            confirmButtonText: 'OK'
+          });
+          return false;
+        }
+        if (!form.companyAddress || form.companyAddress.trim().length < 3) {
+          Swal.fire({
+            icon: 'error',
+            title: '<span style="color:#d33;font-weight:700;">Company Address Required</span>',
+            html: `<div style="font-size:1.1em;color:#333;">Please enter your company address.</div>`,
+            background: '#fff6f6',
+            iconColor: '#d33',
+            showClass: { popup: 'animate__animated animate__shakeX' },
+            width: 400,
+            backdrop: 'rgba(220,53,69,0.08)',
+            confirmButtonColor: '#d33',
+            confirmButtonText: 'OK'
+          });
+          return false;
+        }
+        if (!form.businessEIN || form.businessEIN.trim().length < 6) {
+          Swal.fire({
+            icon: 'error',
+            title: '<span style="color:#d33;font-weight:700;">EIN Required</span>',
+            html: `<div style="font-size:1.1em;color:#333;">Please enter your Business EIN.</div>`,
+            background: '#fff6f6',
+            iconColor: '#d33',
+            showClass: { popup: 'animate__animated animate__shakeX' },
+            width: 400,
+            backdrop: 'rgba(220,53,69,0.08)',
+            confirmButtonColor: '#d33',
             confirmButtonText: 'OK'
           });
           return false;
@@ -282,9 +317,14 @@ const OrderByFollowingStep = () => {
         if (!form.phone || !validatePhoneNumber(form.phone)) {
           Swal.fire({
             icon: 'error',
-            title: 'Invalid Phone Number',
-            text: 'Please enter a valid phone number (minimum 10 digits).',
-            confirmButtonColor: '#3085d6',
+            title: '<span style="color:#d33;font-weight:700;">Invalid Phone Number</span>',
+            html: `<div style="font-size:1.1em;color:#333;">Please enter a valid phone number (minimum 10 digits).</div>`,
+            background: '#fff6f6',
+            iconColor: '#d33',
+            showClass: { popup: 'animate__animated animate__shakeX' },
+            width: 400,
+            backdrop: 'rgba(220,53,69,0.08)',
+            confirmButtonColor: '#d33',
             confirmButtonText: 'OK'
           });
           return false;
@@ -292,22 +332,47 @@ const OrderByFollowingStep = () => {
         if (!form.email || !validateEmail(form.email)) {
           Swal.fire({
             icon: 'error',
-            title: 'Invalid Email',
-            text: 'Please enter a valid email address.',
-            confirmButtonColor: '#3085d6',
+            title: '<span style="color:#d33;font-weight:700;">Invalid Email</span>',
+            html: `<div style="font-size:1.1em;color:#333;">Please enter a valid email address.</div>`,
+            background: '#fff6f6',
+            iconColor: '#d33',
+            showClass: { popup: 'animate__animated animate__shakeX' },
+            width: 400,
+            backdrop: 'rgba(220,53,69,0.08)',
+            confirmButtonColor: '#d33',
+            confirmButtonText: 'OK'
+          });
+          return false;
+        }
+        if (!form.businessStructure || form.businessStructure.trim().length < 2) {
+          Swal.fire({
+            icon: 'error',
+            title: '<span style="color:#d33;font-weight:700;">Business Structure Required</span>',
+            html: `<div style="font-size:1.1em;color:#333;">Please select your business structure.</div>`,
+            background: '#fff6f6',
+            iconColor: '#d33',
+            showClass: { popup: 'animate__animated animate__shakeX' },
+            width: 400,
+            backdrop: 'rgba(220,53,69,0.08)',
+            confirmButtonColor: '#d33',
             confirmButtonText: 'OK'
           });
           return false;
         }
         return true;
       case 2:
-        // Validate only fields marked with * in Step 2
+        // Attractive SweetAlert for all required fields in Step 2
         if (!form.ownership) {
           Swal.fire({
             icon: 'error',
-            title: 'Ownership Status Required',
-            text: 'Please select whether you currently own or lease a dump truck.',
-            confirmButtonColor: '#3085d6',
+            title: '<span style="color:#d33;font-weight:700;">Ownership Status Required</span>',
+            html: `<div style="font-size:1.1em;color:#333;">Please select whether you currently own or lease a dump truck.</div>`,
+            background: '#fff6f6',
+            iconColor: '#d33',
+            showClass: { popup: 'animate__animated animate__shakeX' },
+            width: 400,
+            backdrop: 'rgba(220,53,69,0.08)',
+            confirmButtonColor: '#d33',
             confirmButtonText: 'OK'
           });
           return false;
@@ -315,45 +380,200 @@ const OrderByFollowingStep = () => {
         if (!form.equipmentType) {
           Swal.fire({
             icon: 'error',
-            title: 'Equipment Type Required',
-            text: 'Please enter your equipment type (e.g., Tri-Axle, Quad-Axle, etc.).',
-            confirmButtonColor: '#3085d6',
+            title: '<span style="color:#d33;font-weight:700;">Equipment Type Required</span>',
+            html: `<div style="font-size:1.1em;color:#333;">Please enter your equipment type (e.g., Tri-Axle, Quad-Axle, etc.).</div>`,
+            background: '#fff6f6',
+            iconColor: '#d33',
+            showClass: { popup: 'animate__animated animate__shakeX' },
+            width: 400,
+            backdrop: 'rgba(220,53,69,0.08)',
+            confirmButtonColor: '#d33',
+            confirmButtonText: 'OK'
+          });
+          return false;
+        }
+        if (!form.yearMakeModel) {
+          Swal.fire({
+            icon: 'error',
+            title: '<span style="color:#d33;font-weight:700;">Truck Year/Make/Model Required</span>',
+            html: `<div style="font-size:1.1em;color:#333;">Please enter your truck year/make/model.</div>`,
+            background: '#fff6f6',
+            iconColor: '#d33',
+            showClass: { popup: 'animate__animated animate__shakeX' },
+            width: 400,
+            backdrop: 'rgba(220,53,69,0.08)',
+            confirmButtonColor: '#d33',
+            confirmButtonText: 'OK'
+          });
+          return false;
+        }
+        if (!form.vin) {
+          Swal.fire({
+            icon: 'error',
+            title: '<span style="color:#d33;font-weight:700;">Truck VIN Required</span>',
+            html: `<div style="font-size:1.1em;color:#333;">Please enter your truck VIN number.</div>`,
+            background: '#fff6f6',
+            iconColor: '#d33',
+            showClass: { popup: 'animate__animated animate__shakeX' },
+            width: 400,
+            backdrop: 'rgba(220,53,69,0.08)',
+            confirmButtonColor: '#d33',
+            confirmButtonText: 'OK'
+          });
+          return false;
+        }
+        if (!form.tarp) {
+          Swal.fire({
+            icon: 'error',
+            title: '<span style="color:#d33;font-weight:700;">Tarp System Required</span>',
+            html: `<div style="font-size:1.1em;color:#333;">Please indicate if your truck is equipped with a tarp system.</div>`,
+            background: '#fff6f6',
+            iconColor: '#d33',
+            showClass: { popup: 'animate__animated animate__shakeX' },
+            width: 400,
+            backdrop: 'rgba(220,53,69,0.08)',
+            confirmButtonColor: '#d33',
+            confirmButtonText: 'OK'
+          });
+          return false;
+        }
+        if (!form.additionalTrucks) {
+          Swal.fire({
+            icon: 'error',
+            title: '<span style="color:#d33;font-weight:700;">Additional Trucks Required</span>',
+            html: `<div style="font-size:1.1em;color:#333;">Please indicate if you have additional trucks available.</div>`,
+            background: '#fff6f6',
+            iconColor: '#d33',
+            showClass: { popup: 'animate__animated animate__shakeX' },
+            width: 400,
+            backdrop: 'rgba(220,53,69,0.08)',
+            confirmButtonColor: '#d33',
+            confirmButtonText: 'OK'
+          });
+          return false;
+        }
+        if (!form.dotInspection) {
+          Swal.fire({
+            icon: 'error',
+            title: '<span style="color:#d33;font-weight:700;">DOT Certificate Required</span>',
+            html: `<div style="font-size:1.1em;color:#333;">Please indicate if you have a current DOT inspection certificate.</div>`,
+            background: '#fff6f6',
+            iconColor: '#d33',
+            showClass: { popup: 'animate__animated animate__shakeX' },
+            width: 400,
+            backdrop: 'rgba(220,53,69,0.08)',
+            confirmButtonColor: '#d33',
+            confirmButtonText: 'OK'
+          });
+          return false;
+        }
+        if (!form.backupTrucks) {
+          Swal.fire({
+            icon: 'error',
+            title: '<span style="color:#d33;font-weight:700;">Backup Trucks Required</span>',
+            html: `<div style="font-size:1.1em;color:#333;">Please indicate if you have backup trucks or access to rentals.</div>`,
+            background: '#fff6f6',
+            iconColor: '#d33',
+            showClass: { popup: 'animate__animated animate__shakeX' },
+            width: 400,
+            backdrop: 'rgba(220,53,69,0.08)',
+            confirmButtonColor: '#d33',
             confirmButtonText: 'OK'
           });
           return false;
         }
         return true;
       case 3:
-        // Validate only fields marked with * in Step 3
+        // Attractive SweetAlert for all required fields in Step 3
         if (!form.cdlStatus) {
           Swal.fire({
             icon: 'error',
-            title: 'CDL Status Required',
-            text: 'Please select your CDL status.',
-            confirmButtonColor: '#3085d6',
+            title: '<span style="color:#d33;font-weight:700;">CDL Status Required</span>',
+            html: `<div style="font-size:1.1em;color:#333;">Please select your CDL status.</div>`,
+            background: '#fff6f6',
+            iconColor: '#d33',
+            showClass: { popup: 'animate__animated animate__shakeX' },
+            width: 400,
+            backdrop: 'rgba(220,53,69,0.08)',
+            confirmButtonColor: '#d33',
             confirmButtonText: 'OK'
           });
           return false;
         }
-        if (!form.yearsExperience) {
+        if (!form.cdlSuspended) {
           Swal.fire({
             icon: 'error',
-            title: 'Years of Experience Required',
-            text: 'Please enter your years in trucking/dump hauling business.',
-            confirmButtonColor: '#3085d6',
+            title: '<span style="color:#d33;font-weight:700;">CDL Suspension Info Required</span>',
+            html: `<div style="font-size:1.1em;color:#333;">Please indicate if your CDL was ever suspended or revoked.</div>`,
+            background: '#fff6f6',
+            iconColor: '#d33',
+            showClass: { popup: 'animate__animated animate__shakeX' },
+            width: 400,
+            backdrop: 'rgba(220,53,69,0.08)',
+            confirmButtonColor: '#d33',
+            confirmButtonText: 'OK'
+          });
+          return false;
+        }
+        if (!form.yearsExperience || isNaN(form.yearsExperience) || Number(form.yearsExperience) < 0) {
+          Swal.fire({
+            icon: 'error',
+            title: '<span style="color:#d33;font-weight:700;">Years of Experience Required</span>',
+            html: `<div style="font-size:1.1em;color:#333;">Please enter your years in trucking/dump hauling business (numbers only).</div>`,
+            background: '#fff6f6',
+            iconColor: '#d33',
+            showClass: { popup: 'animate__animated animate__shakeX' },
+            width: 400,
+            backdrop: 'rgba(220,53,69,0.08)',
+            confirmButtonColor: '#d33',
+            confirmButtonText: 'OK'
+          });
+          return false;
+        }
+        if (!form.materialsHauled || form.materialsHauled.length === 0) {
+          Swal.fire({
+            icon: 'error',
+            title: '<span style="color:#d33;font-weight:700;">Materials Hauled Required</span>',
+            html: `<div style="font-size:1.1em;color:#333;">Please select the types of materials you have hauled.</div>`,
+            background: '#fff6f6',
+            iconColor: '#d33',
+            showClass: { popup: 'animate__animated animate__shakeX' },
+            width: 400,
+            backdrop: 'rgba(220,53,69,0.08)',
+            confirmButtonColor: '#d33',
+            confirmButtonText: 'OK'
+          });
+          return false;
+        }
+        if (!form.govContracts) {
+          Swal.fire({
+            icon: 'error',
+            title: '<span style="color:#d33;font-weight:700;">Government Contracts Info Required</span>',
+            html: `<div style="font-size:1.1em;color:#333;">Please indicate if you have worked on government or DOT contracts.</div>`,
+            background: '#fff6f6',
+            iconColor: '#d33',
+            showClass: { popup: 'animate__animated animate__shakeX' },
+            width: 400,
+            backdrop: 'rgba(220,53,69,0.08)',
+            confirmButtonColor: '#d33',
             confirmButtonText: 'OK'
           });
           return false;
         }
         return true;
       case 4:
-        // Validate only fields marked with * in Step 4
-        if (!form.numEmployees) {
+        // Attractive SweetAlert for all required fields in Step 4
+        if (!form.numEmployees || isNaN(form.numEmployees) || Number(form.numEmployees) < 1) {
           Swal.fire({
             icon: 'error',
-            title: 'Number of Employees Required',
-            text: 'Please enter the number of employees/drivers (including yourself).',
-            confirmButtonColor: '#3085d6',
+            title: '<span style="color:#d33;font-weight:700;">Number of Employees Required</span>',
+            html: `<div style="font-size:1.1em;color:#333;">Please enter the number of employees/drivers (including yourself, numbers only).</div>`,
+            background: '#fff6f6',
+            iconColor: '#d33',
+            showClass: { popup: 'animate__animated animate__shakeX' },
+            width: 400,
+            backdrop: 'rgba(220,53,69,0.08)',
+            confirmButtonColor: '#d33',
             confirmButtonText: 'OK'
           });
           return false;
@@ -361,35 +581,170 @@ const OrderByFollowingStep = () => {
         if (!form.workRadius) {
           Swal.fire({
             icon: 'error',
-            title: 'Work Radius Required',
-            text: 'Please select your preferred work radius.',
-            confirmButtonColor: '#3085d6',
+            title: '<span style="color:#d33;font-weight:700;">Work Radius Required</span>',
+            html: `<div style="font-size:1.1em;color:#333;">Please select your preferred work radius.</div>`,
+            background: '#fff6f6',
+            iconColor: '#d33',
+            showClass: { popup: 'animate__animated animate__shakeX' },
+            width: 400,
+            backdrop: 'rgba(220,53,69,0.08)',
+            confirmButtonColor: '#d33',
+            confirmButtonText: 'OK'
+          });
+          return false;
+        }
+        if (!form.shiftWillingness) {
+          Swal.fire({
+            icon: 'error',
+            title: '<span style="color:#d33;font-weight:700;">Shift Flexibility Required</span>',
+            html: `<div style="font-size:1.1em;color:#333;">Please indicate your willingness to work 10–12 hour shifts.</div>`,
+            background: '#fff6f6',
+            iconColor: '#d33',
+            showClass: { popup: 'animate__animated animate__shakeX' },
+            width: 400,
+            backdrop: 'rgba(220,53,69,0.08)',
+            confirmButtonColor: '#d33',
+            confirmButtonText: 'OK'
+          });
+          return false;
+        }
+        if (!form.regions) {
+          Swal.fire({
+            icon: 'error',
+            title: '<span style="color:#d33;font-weight:700;">Preferred States/Regions Required</span>',
+            html: `<div style="font-size:1.1em;color:#333;">Please list the regions or states you are willing to work in.</div>`,
+            background: '#fff6f6',
+            iconColor: '#d33',
+            showClass: { popup: 'animate__animated animate__shakeX' },
+            width: 400,
+            backdrop: 'rgba(220,53,69,0.08)',
+            confirmButtonColor: '#d33',
+            confirmButtonText: 'OK'
+          });
+          return false;
+        }
+        if (!form.startDate) {
+          Swal.fire({
+            icon: 'error',
+            title: '<span style="color:#d33;font-weight:700;">Start Availability Required</span>',
+            html: `<div style="font-size:1.1em;color:#333;">Please select when you would be ready to start.</div>`,
+            background: '#fff6f6',
+            iconColor: '#d33',
+            showClass: { popup: 'animate__animated animate__shakeX' },
+            width: 400,
+            backdrop: 'rgba(220,53,69,0.08)',
+            confirmButtonColor: '#d33',
+            confirmButtonText: 'OK'
+          });
+          return false;
+        }
+        if (!form.weeklyAvailability) {
+          Swal.fire({
+            icon: 'error',
+            title: '<span style="color:#d33;font-weight:700;">Weekly Availability Required</span>',
+            html: `<div style="font-size:1.1em;color:#333;">Please select your expected weekly availability.</div>`,
+            background: '#fff6f6',
+            iconColor: '#d33',
+            showClass: { popup: 'animate__animated animate__shakeX' },
+            width: 400,
+            backdrop: 'rgba(220,53,69,0.08)',
+            confirmButtonColor: '#d33',
             confirmButtonText: 'OK'
           });
           return false;
         }
         return true;
       case 5:
-        // Validate only fields marked with * in Step 5
+        // Attractive SweetAlert for all required fields in Step 5
         if (!form.insuranceCoverage) {
           Swal.fire({
             icon: 'error',
-            title: 'Insurance Coverage Required',
-            text: 'Please select your current insurance coverage.',
-            confirmButtonColor: '#3085d6',
+            title: '<span style="color:#d33;font-weight:700;">Insurance Coverage Required</span>',
+            html: `<div style="font-size:1.1em;color:#333;">Please select your current insurance coverage.</div>`,
+            background: '#fff6f6',
+            iconColor: '#d33',
+            showClass: { popup: 'animate__animated animate__shakeX' },
+            width: 400,
+            backdrop: 'rgba(220,53,69,0.08)',
+            confirmButtonColor: '#d33',
+            confirmButtonText: 'OK'
+          });
+          return false;
+        }
+        if (!form.cargoCoverage) {
+          Swal.fire({
+            icon: 'error',
+            title: '<span style="color:#d33;font-weight:700;">Cargo Coverage Required</span>',
+            html: `<div style="font-size:1.1em;color:#333;">Please indicate if you also have cargo coverage.</div>`,
+            background: '#fff6f6',
+            iconColor: '#d33',
+            showClass: { popup: 'animate__animated animate__shakeX' },
+            width: 400,
+            backdrop: 'rgba(220,53,69,0.08)',
+            confirmButtonColor: '#d33',
+            confirmButtonText: 'OK'
+          });
+          return false;
+        }
+        if (!form.insuranceExpiration) {
+          Swal.fire({
+            icon: 'error',
+            title: '<span style="color:#d33;font-weight:700;">Insurance Expiry Required</span>',
+            html: `<div style="font-size:1.1em;color:#333;">Please enter your insurance policy expiration date.</div>`,
+            background: '#fff6f6',
+            iconColor: '#d33',
+            showClass: { popup: 'animate__animated animate__shakeX' },
+            width: 400,
+            backdrop: 'rgba(220,53,69,0.08)',
+            confirmButtonColor: '#d33',
+            confirmButtonText: 'OK'
+          });
+          return false;
+        }
+        if (!form.workmansComp) {
+          Swal.fire({
+            icon: 'error',
+            title: '<span style="color:#d33;font-weight:700;">Workman\'s Comp Required</span>',
+            html: `<div style="font-size:1.1em;color:#333;">Please indicate if you carry Workman's Comp or Occupational Accident Policy.</div>`,
+            background: '#fff6f6',
+            iconColor: '#d33',
+            showClass: { popup: 'animate__animated animate__shakeX' },
+            width: 400,
+            backdrop: 'rgba(220,53,69,0.08)',
+            confirmButtonColor: '#d33',
+            confirmButtonText: 'OK'
+          });
+          return false;
+        }
+        if (!form.addTruckStaffer) {
+          Swal.fire({
+            icon: 'error',
+            title: '<span style="color:#d33;font-weight:700;">Certificate Holder Required</span>',
+            html: `<div style="font-size:1.1em;color:#333;">Please indicate if you are willing to add TruckStaffer as Certificate Holder.</div>`,
+            background: '#fff6f6',
+            iconColor: '#d33',
+            showClass: { popup: 'animate__animated animate__shakeX' },
+            width: 400,
+            backdrop: 'rgba(220,53,69,0.08)',
+            confirmButtonColor: '#d33',
             confirmButtonText: 'OK'
           });
           return false;
         }
         return true;
       case 6:
-        // Validate only fields marked with * in Step 6
+        // Attractive SweetAlert for all required fields in Step 6
         if (!form.felony) {
           Swal.fire({
             icon: 'error',
-            title: 'Felony Conviction Status Required',
-            text: 'Please indicate whether you have ever been convicted of a felony or major traffic violation.',
-            confirmButtonColor: '#3085d6',
+            title: '<span style="color:#d33;font-weight:700;">Felony Conviction Status Required</span>',
+            html: `<div style="font-size:1.1em;color:#333;">Please indicate whether you have ever been convicted of a felony or major traffic violation.</div>`,
+            background: '#fff6f6',
+            iconColor: '#d33',
+            showClass: { popup: 'animate__animated animate__shakeX' },
+            width: 400,
+            backdrop: 'rgba(220,53,69,0.08)',
+            confirmButtonColor: '#d33',
             confirmButtonText: 'OK'
           });
           return false;
@@ -397,16 +752,126 @@ const OrderByFollowingStep = () => {
         if (!form.drugTesting) {
           Swal.fire({
             icon: 'error',
-            title: 'Drug Testing Willingness Required',
-            text: 'Please indicate whether you are willing to undergo drug testing if required.',
-            confirmButtonColor: '#3085d6',
+            title: '<span style="color:#d33;font-weight:700;">Drug Testing Willingness Required</span>',
+            html: `<div style="font-size:1.1em;color:#333;">Please indicate whether you are willing to undergo drug testing if required.</div>`,
+            background: '#fff6f6',
+            iconColor: '#d33',
+            showClass: { popup: 'animate__animated animate__shakeX' },
+            width: 400,
+            backdrop: 'rgba(220,53,69,0.08)',
+            confirmButtonColor: '#d33',
+            confirmButtonText: 'OK'
+          });
+          return false;
+        }
+        if (!form.enrolledTesting) {
+          Swal.fire({
+            icon: 'error',
+            title: '<span style="color:#d33;font-weight:700;">Random Testing Enrollment Required</span>',
+            html: `<div style="font-size:1.1em;color:#333;">Please indicate if you are enrolled in a random drug/alcohol testing program.</div>`,
+            background: '#fff6f6',
+            iconColor: '#d33',
+            showClass: { popup: 'animate__animated animate__shakeX' },
+            width: 400,
+            backdrop: 'rgba(220,53,69,0.08)',
+            confirmButtonColor: '#d33',
+            confirmButtonText: 'OK'
+          });
+          return false;
+        }
+        if (!form.safetyViolations) {
+          Swal.fire({
+            icon: 'error',
+            title: '<span style="color:#d33;font-weight:700;">Safety Violations Info Required</span>',
+            html: `<div style="font-size:1.1em;color:#333;">Please indicate if you have any current safety violations or outstanding compliance issues.</div>`,
+            background: '#fff6f6',
+            iconColor: '#d33',
+            showClass: { popup: 'animate__animated animate__shakeX' },
+            width: 400,
+            backdrop: 'rgba(220,53,69,0.08)',
+            confirmButtonColor: '#d33',
+            confirmButtonText: 'OK'
+          });
+          return false;
+        }
+        if (!form.pendingLawsuits) {
+          Swal.fire({
+            icon: 'error',
+            title: '<span style="color:#d33;font-weight:700;">Legal Issues Info Required</span>',
+            html: `<div style="font-size:1.1em;color:#333;">Please indicate if you have any pending lawsuits, liens, or judgments.</div>`,
+            background: '#fff6f6',
+            iconColor: '#d33',
+            showClass: { popup: 'animate__animated animate__shakeX' },
+            width: 400,
+            backdrop: 'rgba(220,53,69,0.08)',
+            confirmButtonColor: '#d33',
             confirmButtonText: 'OK'
           });
           return false;
         }
         return true;
       case 7:
-        // Optional step - always valid
+        // Attractive SweetAlert for all required fields in Step 7
+        if (!form.currentContracts) {
+          Swal.fire({
+            icon: 'error',
+            title: '<span style="color:#d33;font-weight:700;">Current Contract Status Required</span>',
+            html: `<div style="font-size:1.1em;color:#333;">Please indicate your current contract status with another project/company.</div>`,
+            background: '#fff6f6',
+            iconColor: '#d33',
+            showClass: { popup: 'animate__animated animate__shakeX' },
+            width: 400,
+            backdrop: 'rgba(220,53,69,0.08)',
+            confirmButtonColor: '#d33',
+            confirmButtonText: 'OK'
+          });
+          return false;
+        }
+        if (!form.dispatchServices) {
+          Swal.fire({
+            icon: 'error',
+            title: '<span style="color:#d33;font-weight:700;">Dispatch Services Info Required</span>',
+            html: `<div style="font-size:1.1em;color:#333;">Please indicate if you currently work with dispatch services or brokers.</div>`,
+            background: '#fff6f6',
+            iconColor: '#d33',
+            showClass: { popup: 'animate__animated animate__shakeX' },
+            width: 400,
+            backdrop: 'rgba(220,53,69,0.08)',
+            confirmButtonColor: '#d33',
+            confirmButtonText: 'OK'
+          });
+          return false;
+        }
+        if (!form.telematics) {
+          Swal.fire({
+            icon: 'error',
+            title: '<span style="color:#d33;font-weight:700;">Telematics/GPS Info Required</span>',
+            html: `<div style="font-size:1.1em;color:#333;">Please indicate if you use telematics or GPS tracking.</div>`,
+            background: '#fff6f6',
+            iconColor: '#d33',
+            showClass: { popup: 'animate__animated animate__shakeX' },
+            width: 400,
+            backdrop: 'rgba(220,53,69,0.08)',
+            confirmButtonColor: '#d33',
+            confirmButtonText: 'OK'
+          });
+          return false;
+        }
+        if (!form.maintenanceInterest) {
+          Swal.fire({
+            icon: 'error',
+            title: '<span style="color:#d33;font-weight:700;">Maintenance Discount Interest Required</span>',
+            html: `<div style="font-size:1.1em;color:#333;">Please indicate if you are interested in priority maintenance discounts.</div>`,
+            background: '#fff6f6',
+            iconColor: '#d33',
+            showClass: { popup: 'animate__animated animate__shakeX' },
+            width: 400,
+            backdrop: 'rgba(220,53,69,0.08)',
+            confirmButtonColor: '#d33',
+            confirmButtonText: 'OK'
+          });
+          return false;
+        }
         return true;
       default:
         return true;
@@ -783,6 +1248,9 @@ const OrderByFollowingStep = () => {
                 {currentStep === 1 && (
                   <fieldset className="wizard-fieldset show">
                     <h6 className="text-md text-neutral-500 mb-3">Basic Contact & Business Info</h6>
+                    <div className="mb-2">
+                      <span className="text-danger text-sm">All fields marked with * are compulsory.</span>
+                    </div>
                     <div className="row gy-3">
                       <div className="col-sm-6">
                         <label className="form-label">Full Name*</label>
@@ -917,6 +1385,9 @@ const OrderByFollowingStep = () => {
                 {currentStep === 2 && (
                   <fieldset className="wizard-fieldset show">
                     <h6 className="text-md text-neutral-500 mb-3">Equipment Details</h6>
+                    <div className="mb-2">
+                      <span className="text-danger text-sm">All fields marked with * are compulsory.</span>
+                    </div>
                     <div className="row gy-3">
                       <div className="col-sm-6">
                         <label className="form-label">Do you currently own or lease a dump truck?*</label>
@@ -932,11 +1403,11 @@ const OrderByFollowingStep = () => {
                         <input type="text" className="form-control" name="equipmentType" value={form.equipmentType} onChange={handleChange} placeholder="Tri-Axle, Quad-Axle, etc." required />
                       </div>
                       <div className="col-sm-6">
-                        <label className="form-label">Year/Make/Model</label>
+                        <label className="form-label">Year/Make/Model*</label>
                         <input type="text" className="form-control" name="yearMakeModel" value={form.yearMakeModel} onChange={handleChange} />
                       </div>
                       <div className="col-sm-6">
-                        <label className="form-label">Truck VIN Number(s)</label>
+                        <label className="form-label">Truck VIN Number(s)*</label>
                         <div className="d-flex gap-2 mb-2">
                           <input 
                             type="text" 
@@ -980,7 +1451,7 @@ const OrderByFollowingStep = () => {
                         <input type="text" className="form-control" name="gvwr" value={form.gvwr} onChange={handleChange} />
                       </div>
                       <div className="col-sm-6">
-                        <label className="form-label">Is your truck equipped with a tarp system?</label>
+                        <label className="form-label">Is your truck equipped with a tarp system?*</label>
                         <select className="form-control" name="tarp" value={form.tarp} onChange={handleChange}>
                           <option value="">Select</option>
                           <option value="Yes">Yes</option>
@@ -988,7 +1459,7 @@ const OrderByFollowingStep = () => {
                         </select>
                       </div>
                       <div className="col-sm-6">
-                        <label className="form-label">Do you have additional trucks available?</label>
+                        <label className="form-label">Do you have additional trucks available?*</label>
                         <select className="form-control" name="additionalTrucks" value={form.additionalTrucks} onChange={handleChange}>
                           <option value="">Select</option>
                           <option value="Yes">Yes</option>
@@ -996,7 +1467,7 @@ const OrderByFollowingStep = () => {
                         </select>
                       </div>
                       <div className="col-sm-6">
-                        <label className="form-label">Do you have a current DOT inspection certificate?</label>
+                        <label className="form-label">Do you have a current DOT inspection certificate?*</label>
                         <select className="form-control" name="dotInspection" value={form.dotInspection} onChange={handleChange}>
                           <option value="">Select</option>
                           <option value="Yes">Yes</option>
@@ -1004,7 +1475,7 @@ const OrderByFollowingStep = () => {
                         </select>
                       </div>
                       <div className="col-sm-6">
-                        <label className="form-label">Do you have backup trucks or access to rentals?</label>
+                        <label className="form-label">Do you have backup trucks or access to rentals?*</label>
                         <select className="form-control" name="backupTrucks" value={form.backupTrucks} onChange={handleChange}>
                           <option value="">Select</option>
                           <option value="Yes">Yes</option>
@@ -1029,6 +1500,9 @@ const OrderByFollowingStep = () => {
                 {currentStep === 3 && (
                   <fieldset className="wizard-fieldset show">
                     <h6 className="text-md text-neutral-500 mb-3">CDL & Driver Credentials</h6>
+                    <div className="mb-2">
+                      <span className="text-danger text-sm">All fields marked with * are compulsory.</span>
+                    </div>
                     <div className="row gy-3">
                       <div className="col-sm-6">
                         <label className="form-label">Do you have a valid CDL?*</label>
@@ -1040,7 +1514,7 @@ const OrderByFollowingStep = () => {
                         </select>
                       </div>
                       <div className="col-sm-6">
-                        <label className="form-label">Ever had your CDL suspended or revoked?</label>
+                        <label className="form-label">Ever had your CDL suspended or revoked?*</label>
                         <select className="form-control" name="cdlSuspended" value={form.cdlSuspended} onChange={handleChange}>
                           <option value="">Select</option>
                           <option value="Yes">Yes</option>
@@ -1071,7 +1545,7 @@ const OrderByFollowingStep = () => {
                         </div>
                       </div>
                       <div className="col-sm-6">
-                        <label className="form-label">Worked on government or DOT contracts?</label>
+                        <label className="form-label">Worked on government or DOT contracts?*</label>
                         <select className="form-control" name="govContracts" value={form.govContracts} onChange={handleChange}>
                           <option value="">Select</option>
                           <option value="Yes">Yes</option>
@@ -1100,6 +1574,9 @@ const OrderByFollowingStep = () => {
                 {currentStep === 4 && (
                   <fieldset className="wizard-fieldset show">
                     <h6 className="text-md text-neutral-500 mb-3">Operational Capacity</h6>
+                    <div className="mb-2">
+                      <span className="text-danger text-sm">All fields marked with * are compulsory.</span>
+                    </div>
                     <div className="row gy-3">
                       <div className="col-sm-6">
                         <label className="form-label">Number of employees/drivers (including yourself)*</label>
@@ -1161,6 +1638,9 @@ const OrderByFollowingStep = () => {
                 {currentStep === 5 && (
                   <fieldset className="wizard-fieldset show">
                     <h6 className="text-md text-neutral-500 mb-3">Insurance & Compliance</h6>
+                    <div className="mb-2">
+                      <span className="text-danger text-sm">All fields marked with * are compulsory.</span>
+                    </div>
                     <div className="row gy-3">
                       <div className="col-sm-6">
                         <label className="form-label">Current insurance coverage*</label>
@@ -1172,7 +1652,7 @@ const OrderByFollowingStep = () => {
                         </select>
                       </div>
                       <div className="col-sm-6">
-                        <label className="form-label">Do you also have cargo coverage?</label>
+                        <label className="form-label">Do you also have cargo coverage?*</label>
                         <select className="form-control" name="cargoCoverage" value={form.cargoCoverage} onChange={handleChange}>
                           <option value="">Select</option>
                           <option value="Yes">Yes</option>
@@ -1180,11 +1660,11 @@ const OrderByFollowingStep = () => {
                         </select>
                       </div>
                       <div className="col-sm-6">
-                        <label className="form-label">Insurance policy expiration date</label>
+                        <label className="form-label">Insurance policy expiration date*</label>
                         <input type="date" className="form-control" name="insuranceExpiration" value={form.insuranceExpiration} onChange={handleChange} />
                       </div>
                       <div className="col-sm-6">
-                        <label className="form-label">Do you carry Workman's Comp or Occupational Accident Policy?</label>
+                        <label className="form-label">Do you carry Workman's Comp or Occupational Accident Policy?*</label>
                         <select className="form-control" name="workmansComp" value={form.workmansComp} onChange={handleChange}>
                           <option value="">Select</option>
                           <option value="Yes">Yes</option>
@@ -1193,7 +1673,7 @@ const OrderByFollowingStep = () => {
                         </select>
                       </div>
                       <div className="col-sm-6">
-                        <label className="form-label">Willing to add TruckStaffer as Certificate Holder?</label>
+                        <label className="form-label">Willing to add TruckStaffer as Certificate Holder?*</label>
                         <select className="form-control" name="addTruckStaffer" value={form.addTruckStaffer} onChange={handleChange}>
                           <option value="">Select</option>
                           <option value="Yes">Yes</option>
@@ -1221,7 +1701,10 @@ const OrderByFollowingStep = () => {
                 {/* Step 6: Screening & Safety */}
                 {currentStep === 6 && (
                   <fieldset className="wizard-fieldset show">
-                    <h6 className="text-md text-neutral-500 mb-3">Screening & Safety</h6>
+                    <h6 className="text-md text-neutral-500 mb-3">Screening & Safety*</h6>
+                    <div className="mb-2">
+                      <span className="text-danger text-sm">All fields marked with * are compulsory.</span>
+                    </div>
                     <div className="row gy-3">
                       <div className="col-sm-6">
                         <label className="form-label">Ever convicted of a felony or major traffic violation?*</label>
@@ -1240,7 +1723,7 @@ const OrderByFollowingStep = () => {
                         </select>
                       </div>
                       <div className="col-sm-6">
-                        <label className="form-label">Enrolled in random drug/alcohol testing program?</label>
+                        <label className="form-label">Enrolled in random drug/alcohol testing program?*</label>
                         <select className="form-control" name="enrolledTesting" value={form.enrolledTesting} onChange={handleChange}>
                           <option value="">Select</option>
                           <option value="Yes">Yes</option>
@@ -1248,7 +1731,7 @@ const OrderByFollowingStep = () => {
                         </select>
                       </div>
                       <div className="col-sm-6">
-                        <label className="form-label">Any current safety violations or outstanding compliance issues?</label>
+                        <label className="form-label">Any current safety violations or outstanding compliance issues?*</label>
                         <select className="form-control" name="safetyViolations" value={form.safetyViolations} onChange={handleChange}>
                           <option value="">Select</option>
                           <option value="Yes">Yes</option>
@@ -1256,7 +1739,7 @@ const OrderByFollowingStep = () => {
                         </select>
                       </div>
                       <div className="col-sm-6">
-                        <label className="form-label">Any pending lawsuits, liens, or judgments?</label>
+                        <label className="form-label">Any pending lawsuits, liens, or judgments?*</label>
                         <select className="form-control" name="pendingLawsuits" value={form.pendingLawsuits} onChange={handleChange}>
                           <option value="">Select</option>
                           <option value="Yes">Yes</option>
@@ -1277,9 +1760,12 @@ const OrderByFollowingStep = () => {
                 {currentStep === 7 && (
                   <fieldset className="wizard-fieldset show">
                     <h6 className="text-md text-neutral-500 mb-3">Additional Information</h6>
+                    <div className="mb-2">
+                      <span className="text-danger text-sm">All fields marked with * are compulsory.</span>
+                    </div>
                     <div className="row gy-3">
                       <div className="col-sm-6">
-                        <label className="form-label">Currently under contract with another project/company?</label>
+                        <label className="form-label">Currently under contract with another project/company?*</label>
                         <select className="form-control" name="currentContracts" value={form.currentContracts} onChange={handleChange}>
                           <option value="">Select</option>
                           <option value="Available now">Available now</option>
@@ -1288,7 +1774,7 @@ const OrderByFollowingStep = () => {
                         </select>
                       </div>
                       <div className="col-sm-6">
-                        <label className="form-label">Currently work with dispatch services or brokers?</label>
+                        <label className="form-label">Currently work with dispatch services or brokers?*</label>
                         <select className="form-control" name="dispatchServices" value={form.dispatchServices} onChange={handleChange}>
                           <option value="">Select</option>
                           <option value="Yes">Yes</option>
@@ -1296,7 +1782,7 @@ const OrderByFollowingStep = () => {
                         </select>
                       </div>
                       <div className="col-sm-6">
-                        <label className="form-label">Use telematics or GPS tracking?</label>
+                        <label className="form-label">Use telematics or GPS tracking?*</label>
                         <select className="form-control" name="telematics" value={form.telematics} onChange={handleChange}>
                           <option value="">Select</option>
                           <option value="Yes">Yes</option>
@@ -1304,7 +1790,7 @@ const OrderByFollowingStep = () => {
                         </select>
                       </div>
                       <div className="col-sm-6">
-                        <label className="form-label">Interested in priority maintenance discounts?</label>
+                        <label className="form-label">Interested in priority maintenance discounts?*</label>
                         <select className="form-control" name="maintenanceInterest" value={form.maintenanceInterest} onChange={handleChange}>
                           <option value="">Select</option>
                           <option value="Yes">Yes</option>
@@ -1338,6 +1824,7 @@ const OrderByFollowingStep = () => {
               <div className="modal-header">
                 <h5 className="modal-title">Important Information Missing</h5>
                 <button 
+                  
                   type="button" 
                   className="btn-close" 
                   onClick={() => setShowFinalValidation(false)}
