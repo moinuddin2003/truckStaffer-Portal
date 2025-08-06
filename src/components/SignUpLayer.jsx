@@ -26,48 +26,64 @@ const SignUpLayer = () => {
     
   // 🚨 Frontend Validation
   if (!name.trim()) {
-    // setError("Name is required");
     Swal.fire({
       icon: 'error',
-      title: 'Error',
-      text: "Name is required",
-      confirmButtonColor: '#3085d6',
+      title: '<span style="color:#d33;font-weight:700;">Name Required</span>',
+      html: `<div style="font-size:1.1em;color:#333;">Name is required</div>`,
+      background: '#fff6f6',
+      iconColor: '#d33',
+      showClass: { popup: 'animate__animated animate__shakeX' },
+      width: 400,
+      backdrop: 'rgba(220,53,69,0.08)',
+      confirmButtonColor: '#d33',
       confirmButtonText: 'OK'
     });
     return;
   }
 
   if (!email.includes("@") || !email.includes(".")) {
-    // setError("Invalid email address");
     Swal.fire({
       icon: 'error',
-      title: 'Error',
-      text: "Invalid email address",
-      confirmButtonColor: '#3085d6',
+      title: '<span style="color:#d33;font-weight:700;">Invalid Email</span>',
+      html: `<div style="font-size:1.1em;color:#333;">Invalid email address</div>`,
+      background: '#fff6f6',
+      iconColor: '#d33',
+      showClass: { popup: 'animate__animated animate__shakeX' },
+      width: 400,
+      backdrop: 'rgba(220,53,69,0.08)',
+      confirmButtonColor: '#d33',
       confirmButtonText: 'OK'
     });
     return;
   }
 
   if (password.length < 8) {
-    // setError("Password must be at least 8 characters");
     Swal.fire({
       icon: 'error',
-      title: 'Password Error',
-      text: "Password must be at least 8 characters",
-      confirmButtonColor: '#3085d6',
+      title: '<span style="color:#d33;font-weight:700;">Password Error</span>',
+      html: `<div style="font-size:1.1em;color:#333;">Password must be at least 8 characters</div>`,
+      background: '#fff6f6',
+      iconColor: '#d33',
+      showClass: { popup: 'animate__animated animate__shakeX' },
+      width: 400,
+      backdrop: 'rgba(220,53,69,0.08)',
+      confirmButtonColor: '#d33',
       confirmButtonText: 'OK'
     });
     return;
   }
 
   if (password !== passwordConfirmation) {
-    // setError("Pass do not match");
     Swal.fire({
       icon: 'error',
-      title: 'Error',
-      text: "Passwords do not match",
-      confirmButtonColor: '#3085d6',
+      title: '<span style="color:#d33;font-weight:700;">Password Mismatch</span>',
+      html: `<div style="font-size:1.1em;color:#333;">Passwords do not match</div>`,
+      background: '#fff6f6',
+      iconColor: '#d33',
+      showClass: { popup: 'animate__animated animate__shakeX' },
+      width: 400,
+      backdrop: 'rgba(220,53,69,0.08)',
+      confirmButtonColor: '#d33',
       confirmButtonText: 'OK'
     });
     return;
@@ -119,32 +135,46 @@ const SignUpLayer = () => {
         // setError(data.message || "Registration failed");
         // Show all validation errors if present
         if (data.errors) {
-          const errorMessages = Object.values(data.errors).join('\n');
+          const errorMessages = Object.values(data.errors).join('<br>');
           Swal.fire({
             icon: 'error',
-            title: 'Error',
-            text: errorMessages,
-            confirmButtonColor: '#3085d6',
+            title: '<span style="color:#d33;font-weight:700;">Validation Error</span>',
+            html: `<div style="font-size:1.1em;color:#333;">${errorMessages}</div>`,
+            background: '#fff6f6',
+            iconColor: '#d33',
+            showClass: { popup: 'animate__animated animate__shakeX' },
+            width: 400,
+            backdrop: 'rgba(220,53,69,0.08)',
+            confirmButtonColor: '#d33',
             confirmButtonText: 'OK'
           });
         } else {
           Swal.fire({
             icon: 'error',
-            title: 'Error',
-            text: data.message || "Registration failed",
-            confirmButtonColor: '#3085d6',
+            title: '<span style="color:#d33;font-weight:700;">Registration Error</span>',
+            html: `<div style="font-size:1.1em;color:#333;">${data.message || "Registration failed"}</div>`,
+            background: '#fff6f6',
+            iconColor: '#d33',
+            showClass: { popup: 'animate__animated animate__shakeX' },
+            width: 400,
+            backdrop: 'rgba(220,53,69,0.08)',
+            confirmButtonColor: '#d33',
             confirmButtonText: 'OK'
           });
         }
         // console.log("❌ Sign-up failed, error message:", data.message);
       }
     } catch (err) {
-      // setError("Network error");
       Swal.fire({
         icon: 'error',
-        title: 'Error',
-        text: 'Unable to connect to the server. Please check your internet connection and try again.',
-        confirmButtonColor: '#3085d6',
+        title: '<span style="color:#d33;font-weight:700;">Network Error</span>',
+        html: `<div style="font-size:1.1em;color:#333;">Unable to connect to the server.<br>Please check your internet connection and try again.</div>`,
+        background: '#fff6f6',
+        iconColor: '#d33',
+        showClass: { popup: 'animate__animated animate__shakeX' },
+        width: 400,
+        backdrop: 'rgba(220,53,69,0.08)',
+        confirmButtonColor: '#d33',
         confirmButtonText: 'OK'
       });
       console.log("🌐 Network error during sign-up:", err);
@@ -167,9 +197,14 @@ const SignUpLayer = () => {
         setError("Google Sign-Up failed - no credential received");
         Swal.fire({
           icon: 'error',
-          title: 'Error',
-          text: 'No credential received from Google. Please try again.',
-          confirmButtonColor: '#3085d6',
+          title: '<span style="color:#d33;font-weight:700;">Google Sign-Up Error</span>',
+          html: `<div style="font-size:1.1em;color:#333;">No credential received from Google. Please try again.</div>`,
+          background: '#fff6f6',
+          iconColor: '#d33',
+          showClass: { popup: 'animate__animated animate__shakeX' },
+          width: 400,
+          backdrop: 'rgba(220,53,69,0.08)',
+          confirmButtonColor: '#d33',
           confirmButtonText: 'OK'
         });
         return;
@@ -222,9 +257,14 @@ const SignUpLayer = () => {
       setError("Google Sign-Up failed");
       Swal.fire({
         icon: 'error',
-        title: 'Error',
-        text: 'An error occurred during Google sign-up. Please try again.',
-        confirmButtonColor: '#3085d6',
+        title: '<span style="color:#d33;font-weight:700;">Google Sign-Up Error</span>',
+        html: `<div style="font-size:1.1em;color:#333;">An error occurred during Google sign-up. Please try again.</div>`,
+        background: '#fff6f6',
+        iconColor: '#d33',
+        showClass: { popup: 'animate__animated animate__shakeX' },
+        width: 400,
+        backdrop: 'rgba(220,53,69,0.08)',
+        confirmButtonColor: '#d33',
         confirmButtonText: 'OK'
       });
     } finally {
@@ -238,9 +278,14 @@ const SignUpLayer = () => {
     setGoogleLoading(false);
     Swal.fire({
       icon: 'error',
-      title: 'Error',
-      text: 'Google sign-up was cancelled or failed. Please try again.',
-      confirmButtonColor: '#3085d6',
+      title: '<span style="color:#d33;font-weight:700;">Google Sign-Up Error</span>',
+      html: `<div style="font-size:1.1em;color:#333;">Google sign-up was cancelled or failed. Please try again.</div>`,
+      background: '#fff6f6',
+      iconColor: '#d33',
+      showClass: { popup: 'animate__animated animate__shakeX' },
+      width: 400,
+      backdrop: 'rgba(220,53,69,0.08)',
+      confirmButtonColor: '#d33',
       confirmButtonText: 'OK'
     });
   };

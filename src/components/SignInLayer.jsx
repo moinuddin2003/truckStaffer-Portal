@@ -51,23 +51,37 @@ const SignInLayer = () => {
       } else {
         if (data.errors) {
           setFieldErrors(data.errors);
-          // Show validation errors in SweetAlert
-          const errorMessages = Object.values(data.errors).join('\n');
+          // Show validation errors in SweetAlert (attractive style)
+          const errorMessages = Object.values(data.errors).join('<br>');
           Swal.fire({
             icon: 'error',
-            title: 'Validation Error',
-            text: errorMessages,
-            confirmButtonColor: '#3085d6',
+            title: '<span style="color:#d33;font-weight:700;">Validation Error</span>',
+            html: `<div style="font-size:1.1em;color:#333;">${errorMessages}</div>`,
+            background: '#fff6f6',
+            iconColor: '#d33',
+            showClass: {
+              popup: 'animate__animated animate__shakeX'
+            },
+            width: 400,
+            backdrop: 'rgba(220,53,69,0.08)',
+            confirmButtonColor: '#d33',
             confirmButtonText: 'OK'
           });
         } else {
           setError(data.message || "Login failed");
-          // Show general error in SweetAlert
+          // Show general error in SweetAlert (attractive style)
           Swal.fire({
             icon: 'error',
-            title: 'Login Failed',
-            text: data.message || "Login failed",
-            confirmButtonColor: '#3085d6',
+            title: '<span style="color:#d33;font-weight:700;">Login Failed</span>',
+            html: `<div style="font-size:1.1em;color:#333;">${data.message || "Login failed"}</div>`,
+            background: '#fff6f6',
+            iconColor: '#d33',
+            showClass: {
+              popup: 'animate__animated animate__shakeX'
+            },
+            width: 400,
+            backdrop: 'rgba(220,53,69,0.08)',
+            confirmButtonColor: '#d33',
             confirmButtonText: 'OK'
           });
         }
@@ -80,9 +94,16 @@ const SignInLayer = () => {
       // Show network error in SweetAlert
       Swal.fire({
         icon: 'error',
-        title: 'Network Error',
-        text: 'Unable to connect to the server. Please check your internet connection and try again.',
-        confirmButtonColor: '#3085d6',
+        title: '<span style="color:#d33;font-weight:700;">Network Error</span>',
+        html: `<div style="font-size:1.1em;color:#333;">Unable to connect to the server.<br>Please check your internet connection and try again.</div>`,
+        background: '#fff6f6',
+        iconColor: '#d33',
+        showClass: {
+          popup: 'animate__animated animate__shakeX'
+        },
+        width: 400,
+        backdrop: 'rgba(220,53,69,0.08)',
+        confirmButtonColor: '#d33',
         confirmButtonText: 'OK'
       });
     } finally {
