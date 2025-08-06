@@ -102,12 +102,21 @@ const OrderByFollowingStep = () => {
       navigate("/sign-in");
     }
 
+    // Get logged-in user's email from localStorage
+    // Get email from localStorage (set during login)
+    const storedEmail = localStorage.getItem("user")
+      ? JSON.parse(localStorage.getItem("user")).email
+      : null;
+
     // Load saved progress from localStorage
     const savedProgress = localStorage.getItem("applicationProgress");
     if (savedProgress) {
       try {
         const progress = JSON.parse(savedProgress);
-        setForm(progress.form || initialForm);
+        setForm({
+          ...progress.form,
+          email: storedEmail || progress.form.email || initialForm.email
+        });
         setCompletedSteps(progress.completedSteps || []);
         
         // Ensure currentStep is never greater than 7
@@ -122,6 +131,12 @@ const OrderByFollowingStep = () => {
       } catch (e) {
         console.error("Error loading saved progress:", e);
       }
+    } else if (storedEmail) {
+      // If no saved progress, set email from localStorage
+      setForm((prev) => ({
+        ...prev,
+        email: storedEmail
+      }));
     }
   }, [navigate]);
 
@@ -699,7 +714,7 @@ const OrderByFollowingStep = () => {
 
             <div className="form-wizard">
               <form>
-                           {/* Enhanced step indicator */}
+                {/* Enhanced step indicator */}
                  <div className="mb-6">
                    <div className="d-flex align-items-center justify-content-between mb-3">
                      <h6 className="text-lg fw-semibold text-primary-light mb-0">
@@ -839,14 +854,19 @@ const OrderByFollowingStep = () => {
                       </div>
                       <div className="col-sm-6">
                         <label className="form-label">Email*</label>
-                        <input 
-                          type="email" 
-                          className="form-control" 
-                          name="email" 
-                          value={form.email} 
-                          onChange={handleChange} 
-                          placeholder="Enter valid email address"
-                          required 
+                        <input
+                          type="email"
+                          className="form-control"
+                          name="email"
+                          value={
+                            form.email ||
+                            (localStorage.getItem("user")
+                              ? JSON.parse(localStorage.getItem("user")).email
+                              : "")
+                          }
+                          readOnly
+                          disabled
+                          style={{ background: "#f5f5f5", color: "#888", cursor: "not-allowed" }}
                         />
                       </div>
                       <div className="col-12">
