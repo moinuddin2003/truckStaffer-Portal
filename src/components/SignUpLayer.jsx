@@ -111,6 +111,11 @@ const SignUpLayer = () => {
       
       if (data.status && data.token) {
         localStorage.setItem("token", data.token);
+        // Store new user info in localStorage
+        localStorage.setItem("user", JSON.stringify({
+          name,
+          email
+        }));
         // console.log("💾 Token saved to localStorage:", localStorage.getItem("token"));  it is giving commplete token in console
         
         // Send welcome email
