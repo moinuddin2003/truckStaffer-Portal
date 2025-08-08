@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import Swal from 'sweetalert2';
+import Swal from "sweetalert2";
 
 const initialForm = {
   fullName: "",
@@ -77,7 +77,7 @@ const OrderByFollowingStep = () => {
   // Effect to handle currentStep being greater than 7
   useEffect(() => {
     if (currentStep > 7) {
-      console.warn('Current step is greater than 7, redirecting to summary');
+      console.warn("Current step is greater than 7, redirecting to summary");
       navigate("/application-summary");
       return;
     }
@@ -108,21 +108,22 @@ const OrderByFollowingStep = () => {
       ? JSON.parse(localStorage.getItem("user")).email
       : null;
 
-    // Load saved progress from localStorage
-    const savedProgress = localStorage.getItem("applicationProgress");
+    // Load saved progress from localStorage - make it user-specific
+    const progressKey = storedEmail ? `applicationProgress_${storedEmail}` : "applicationProgress";
+    const savedProgress = localStorage.getItem(progressKey);
     if (savedProgress) {
       try {
         const progress = JSON.parse(savedProgress);
         setForm({
           ...progress.form,
-          email: storedEmail || progress.form.email || initialForm.email
+          email: storedEmail || progress.form.email || initialForm.email,
         });
         setCompletedSteps(progress.completedSteps || []);
-        
+
         // Ensure currentStep is never greater than 7
         const savedStep = progress.currentStep || 1;
         if (savedStep > 7) {
-          console.warn('Saved step was greater than 7, redirecting to summary');
+          console.warn("Saved step was greater than 7, redirecting to summary");
           navigate("/application-summary");
           return;
         }
@@ -135,7 +136,7 @@ const OrderByFollowingStep = () => {
       // If no saved progress, set email from localStorage
       setForm((prev) => ({
         ...prev,
-        email: storedEmail
+        email: storedEmail,
       }));
     }
   }, [navigate]);
@@ -147,44 +148,48 @@ const OrderByFollowingStep = () => {
       completedSteps,
       currentStep,
       applicationId,
-      timestamp: Date.now()
+      timestamp: Date.now(),
     };
-    localStorage.setItem("applicationProgress", JSON.stringify(progress));
+    const storedEmail = localStorage.getItem("user")
+      ? JSON.parse(localStorage.getItem("user")).email
+      : null;
+    const progressKey = storedEmail ? `applicationProgress_${storedEmail}` : "applicationProgress";
+    localStorage.setItem(progressKey, JSON.stringify(progress));
   }, [form, completedSteps, currentStep, applicationId]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    
+
     // Apply specific validations based on field type
     let validatedValue = value;
-    
+
     switch (name) {
-      case 'phone':
+      case "phone":
         // Only allow numbers, spaces, dashes, and parentheses for phone
-        validatedValue = value.replace(/[^0-9\s\-\(\)]/g, '');
+        validatedValue = value.replace(/[^0-9\s\-\(\)]/g, "");
         break;
-      case 'ownerName':
-      case 'fullName':
+      case "ownerName":
+      case "fullName":
         // Only allow letters, spaces, and common name characters
-        validatedValue = value.replace(/[^a-zA-Z\s\-'\.]/g, '');
+        validatedValue = value.replace(/[^a-zA-Z\s\-'\.]/g, "");
         break;
-      case 'businessEIN':
+      case "businessEIN":
         // Only allow numbers and dashes for EIN
-        validatedValue = value.replace(/[^0-9\-]/g, '');
+        validatedValue = value.replace(/[^0-9\-]/g, "");
         break;
-      case 'mcDotNumber':
+      case "mcDotNumber":
         // Only allow numbers and letters for MC/DOT number
-        validatedValue = value.replace(/[^a-zA-Z0-9]/g, '');
+        validatedValue = value.replace(/[^a-zA-Z0-9]/g, "");
         break;
-      case 'yearsExperience':
-      case 'numEmployees':
+      case "yearsExperience":
+      case "numEmployees":
         // Only allow numbers
-        validatedValue = value.replace(/[^0-9]/g, '');
+        validatedValue = value.replace(/[^0-9]/g, "");
         break;
       default:
         validatedValue = value;
     }
-    
+
     setForm((prev) => ({ ...prev, [name]: validatedValue }));
   };
 
@@ -194,7 +199,7 @@ const OrderByFollowingStep = () => {
       setForm((prev) => ({
         ...prev,
         vins: [...prev.vins, form.vin.trim()],
-        vin: "" // Clear the input field
+        vin: "", // Clear the input field
       }));
     }
   };
@@ -203,13 +208,13 @@ const OrderByFollowingStep = () => {
   const handleRemoveVin = (indexToRemove) => {
     setForm((prev) => ({
       ...prev,
-      vins: prev.vins.filter((_, index) => index !== indexToRemove)
+      vins: prev.vins.filter((_, index) => index !== indexToRemove),
     }));
   };
 
   // Handle VIN input key press (Enter to add)
   const handleVinKeyPress = (e) => {
-    if (e.key === 'Enter') {
+    if (e.key === "Enter") {
       e.preventDefault();
       handleAddVin();
     }
@@ -249,7 +254,7 @@ const OrderByFollowingStep = () => {
   // Validation functions
   const validatePhoneNumber = (phone) => {
     // Remove all non-digit characters for validation
-    const digitsOnly = phone.replace(/\D/g, '');
+    const digitsOnly = phone.replace(/\D/g, "");
     return digitsOnly.length >= 10 && digitsOnly.length <= 15;
   };
 
@@ -264,642 +269,315 @@ const OrderByFollowingStep = () => {
     return emailRegex.test(email);
   };
 
-  // Validate current step
-  const validateCurrentStep = () => {
-    switch (currentStep) {
-      case 1:
-        // Attractive SweetAlert for all required fields
-        if (!form.fullName || !validateName(form.fullName)) {
-          Swal.fire({
-            icon: 'error',
-            title: '<span style="color:#d33;font-weight:700;">Invalid Full Name</span>',
-            html: `<div style="font-size:1.1em;color:#333;">Please enter a valid full name (letters only, minimum 2 characters).</div>`,
-            background: '#fff6f6',
-            iconColor: '#d33',
-            showClass: { popup: 'animate__animated animate__shakeX' },
-            width: 400,
-            backdrop: 'rgba(220,53,69,0.08)',
-            confirmButtonColor: '#d33',
-            confirmButtonText: 'OK'
-          });
-          return false;
-        }
-        if (!form.companyAddress || form.companyAddress.trim().length < 3) {
-          Swal.fire({
-            icon: 'error',
-            title: '<span style="color:#d33;font-weight:700;">Company Address Required</span>',
-            html: `<div style="font-size:1.1em;color:#333;">Please enter your company address.</div>`,
-            background: '#fff6f6',
-            iconColor: '#d33',
-            showClass: { popup: 'animate__animated animate__shakeX' },
-            width: 400,
-            backdrop: 'rgba(220,53,69,0.08)',
-            confirmButtonColor: '#d33',
-            confirmButtonText: 'OK'
-          });
-          return false;
-        }
-        if (!form.businessEIN || form.businessEIN.trim().length < 6) {
-          Swal.fire({
-            icon: 'error',
-            title: '<span style="color:#d33;font-weight:700;">EIN Required</span>',
-            html: `<div style="font-size:1.1em;color:#333;">Please enter your Business EIN.</div>`,
-            background: '#fff6f6',
-            iconColor: '#d33',
-            showClass: { popup: 'animate__animated animate__shakeX' },
-            width: 400,
-            backdrop: 'rgba(220,53,69,0.08)',
-            confirmButtonColor: '#d33',
-            confirmButtonText: 'OK'
-          });
-          return false;
-        }
-        if (!form.phone || !validatePhoneNumber(form.phone)) {
-          Swal.fire({
-            icon: 'error',
-            title: '<span style="color:#d33;font-weight:700;">Invalid Phone Number</span>',
-            html: `<div style="font-size:1.1em;color:#333;">Please enter a valid phone number (minimum 10 digits).</div>`,
-            background: '#fff6f6',
-            iconColor: '#d33',
-            showClass: { popup: 'animate__animated animate__shakeX' },
-            width: 400,
-            backdrop: 'rgba(220,53,69,0.08)',
-            confirmButtonColor: '#d33',
-            confirmButtonText: 'OK'
-          });
-          return false;
-        }
-        if (!form.email || !validateEmail(form.email)) {
-          Swal.fire({
-            icon: 'error',
-            title: '<span style="color:#d33;font-weight:700;">Invalid Email</span>',
-            html: `<div style="font-size:1.1em;color:#333;">Please enter a valid email address.</div>`,
-            background: '#fff6f6',
-            iconColor: '#d33',
-            showClass: { popup: 'animate__animated animate__shakeX' },
-            width: 400,
-            backdrop: 'rgba(220,53,69,0.08)',
-            confirmButtonColor: '#d33',
-            confirmButtonText: 'OK'
-          });
-          return false;
-        }
-        if (!form.businessStructure || form.businessStructure.trim().length < 2) {
-          Swal.fire({
-            icon: 'error',
-            title: '<span style="color:#d33;font-weight:700;">Business Structure Required</span>',
-            html: `<div style="font-size:1.1em;color:#333;">Please select your business structure.</div>`,
-            background: '#fff6f6',
-            iconColor: '#d33',
-            showClass: { popup: 'animate__animated animate__shakeX' },
-            width: 400,
-            backdrop: 'rgba(220,53,69,0.08)',
-            confirmButtonColor: '#d33',
-            confirmButtonText: 'OK'
-          });
-          return false;
-        }
-        return true;
-      case 2:
-        // Attractive SweetAlert for all required fields in Step 2
-        if (!form.ownership) {
-          Swal.fire({
-            icon: 'error',
-            title: '<span style="color:#d33;font-weight:700;">Ownership Status Required</span>',
-            html: `<div style="font-size:1.1em;color:#333;">Please select whether you currently own or lease a dump truck.</div>`,
-            background: '#fff6f6',
-            iconColor: '#d33',
-            showClass: { popup: 'animate__animated animate__shakeX' },
-            width: 400,
-            backdrop: 'rgba(220,53,69,0.08)',
-            confirmButtonColor: '#d33',
-            confirmButtonText: 'OK'
-          });
-          return false;
-        }
-        if (!form.equipmentType) {
-          Swal.fire({
-            icon: 'error',
-            title: '<span style="color:#d33;font-weight:700;">Equipment Type Required</span>',
-            html: `<div style="font-size:1.1em;color:#333;">Please enter your equipment type (e.g., Tri-Axle, Quad-Axle, etc.).</div>`,
-            background: '#fff6f6',
-            iconColor: '#d33',
-            showClass: { popup: 'animate__animated animate__shakeX' },
-            width: 400,
-            backdrop: 'rgba(220,53,69,0.08)',
-            confirmButtonColor: '#d33',
-            confirmButtonText: 'OK'
-          });
-          return false;
-        }
-        if (!form.yearMakeModel) {
-          Swal.fire({
-            icon: 'error',
-            title: '<span style="color:#d33;font-weight:700;">Truck Year/Make/Model Required</span>',
-            html: `<div style="font-size:1.1em;color:#333;">Please enter your truck year/make/model.</div>`,
-            background: '#fff6f6',
-            iconColor: '#d33',
-            showClass: { popup: 'animate__animated animate__shakeX' },
-            width: 400,
-            backdrop: 'rgba(220,53,69,0.08)',
-            confirmButtonColor: '#d33',
-            confirmButtonText: 'OK'
-          });
-          return false;
-        }
-        if (!form.vin) {
-          Swal.fire({
-            icon: 'error',
-            title: '<span style="color:#d33;font-weight:700;">Truck VIN Required</span>',
-            html: `<div style="font-size:1.1em;color:#333;">Please enter your truck VIN number.</div>`,
-            background: '#fff6f6',
-            iconColor: '#d33',
-            showClass: { popup: 'animate__animated animate__shakeX' },
-            width: 400,
-            backdrop: 'rgba(220,53,69,0.08)',
-            confirmButtonColor: '#d33',
-            confirmButtonText: 'OK'
-          });
-          return false;
-        }
-        if (!form.tarp) {
-          Swal.fire({
-            icon: 'error',
-            title: '<span style="color:#d33;font-weight:700;">Tarp System Required</span>',
-            html: `<div style="font-size:1.1em;color:#333;">Please indicate if your truck is equipped with a tarp system.</div>`,
-            background: '#fff6f6',
-            iconColor: '#d33',
-            showClass: { popup: 'animate__animated animate__shakeX' },
-            width: 400,
-            backdrop: 'rgba(220,53,69,0.08)',
-            confirmButtonColor: '#d33',
-            confirmButtonText: 'OK'
-          });
-          return false;
-        }
-        if (!form.additionalTrucks) {
-          Swal.fire({
-            icon: 'error',
-            title: '<span style="color:#d33;font-weight:700;">Additional Trucks Required</span>',
-            html: `<div style="font-size:1.1em;color:#333;">Please indicate if you have additional trucks available.</div>`,
-            background: '#fff6f6',
-            iconColor: '#d33',
-            showClass: { popup: 'animate__animated animate__shakeX' },
-            width: 400,
-            backdrop: 'rgba(220,53,69,0.08)',
-            confirmButtonColor: '#d33',
-            confirmButtonText: 'OK'
-          });
-          return false;
-        }
-        if (!form.dotInspection) {
-          Swal.fire({
-            icon: 'error',
-            title: '<span style="color:#d33;font-weight:700;">DOT Certificate Required</span>',
-            html: `<div style="font-size:1.1em;color:#333;">Please indicate if you have a current DOT inspection certificate.</div>`,
-            background: '#fff6f6',
-            iconColor: '#d33',
-            showClass: { popup: 'animate__animated animate__shakeX' },
-            width: 400,
-            backdrop: 'rgba(220,53,69,0.08)',
-            confirmButtonColor: '#d33',
-            confirmButtonText: 'OK'
-          });
-          return false;
-        }
-        if (!form.backupTrucks) {
-          Swal.fire({
-            icon: 'error',
-            title: '<span style="color:#d33;font-weight:700;">Backup Trucks Required</span>',
-            html: `<div style="font-size:1.1em;color:#333;">Please indicate if you have backup trucks or access to rentals.</div>`,
-            background: '#fff6f6',
-            iconColor: '#d33',
-            showClass: { popup: 'animate__animated animate__shakeX' },
-            width: 400,
-            backdrop: 'rgba(220,53,69,0.08)',
-            confirmButtonColor: '#d33',
-            confirmButtonText: 'OK'
-          });
-          return false;
-        }
-        return true;
-      case 3:
-        // Attractive SweetAlert for all required fields in Step 3
-        if (!form.cdlStatus) {
-          Swal.fire({
-            icon: 'error',
-            title: '<span style="color:#d33;font-weight:700;">CDL Status Required</span>',
-            html: `<div style="font-size:1.1em;color:#333;">Please select your CDL status.</div>`,
-            background: '#fff6f6',
-            iconColor: '#d33',
-            showClass: { popup: 'animate__animated animate__shakeX' },
-            width: 400,
-            backdrop: 'rgba(220,53,69,0.08)',
-            confirmButtonColor: '#d33',
-            confirmButtonText: 'OK'
-          });
-          return false;
-        }
-        if (!form.cdlSuspended) {
-          Swal.fire({
-            icon: 'error',
-            title: '<span style="color:#d33;font-weight:700;">CDL Suspension Info Required</span>',
-            html: `<div style="font-size:1.1em;color:#333;">Please indicate if your CDL was ever suspended or revoked.</div>`,
-            background: '#fff6f6',
-            iconColor: '#d33',
-            showClass: { popup: 'animate__animated animate__shakeX' },
-            width: 400,
-            backdrop: 'rgba(220,53,69,0.08)',
-            confirmButtonColor: '#d33',
-            confirmButtonText: 'OK'
-          });
-          return false;
-        }
-        if (!form.yearsExperience || isNaN(form.yearsExperience) || Number(form.yearsExperience) < 0) {
-          Swal.fire({
-            icon: 'error',
-            title: '<span style="color:#d33;font-weight:700;">Years of Experience Required</span>',
-            html: `<div style="font-size:1.1em;color:#333;">Please enter your years in trucking/dump hauling business (numbers only).</div>`,
-            background: '#fff6f6',
-            iconColor: '#d33',
-            showClass: { popup: 'animate__animated animate__shakeX' },
-            width: 400,
-            backdrop: 'rgba(220,53,69,0.08)',
-            confirmButtonColor: '#d33',
-            confirmButtonText: 'OK'
-          });
-          return false;
-        }
-        if (!form.materialsHauled || form.materialsHauled.length === 0) {
-          Swal.fire({
-            icon: 'error',
-            title: '<span style="color:#d33;font-weight:700;">Materials Hauled Required</span>',
-            html: `<div style="font-size:1.1em;color:#333;">Please select the types of materials you have hauled.</div>`,
-            background: '#fff6f6',
-            iconColor: '#d33',
-            showClass: { popup: 'animate__animated animate__shakeX' },
-            width: 400,
-            backdrop: 'rgba(220,53,69,0.08)',
-            confirmButtonColor: '#d33',
-            confirmButtonText: 'OK'
-          });
-          return false;
-        }
-        if (!form.govContracts) {
-          Swal.fire({
-            icon: 'error',
-            title: '<span style="color:#d33;font-weight:700;">Government Contracts Info Required</span>',
-            html: `<div style="font-size:1.1em;color:#333;">Please indicate if you have worked on government or DOT contracts.</div>`,
-            background: '#fff6f6',
-            iconColor: '#d33',
-            showClass: { popup: 'animate__animated animate__shakeX' },
-            width: 400,
-            backdrop: 'rgba(220,53,69,0.08)',
-            confirmButtonColor: '#d33',
-            confirmButtonText: 'OK'
-          });
-          return false;
-        }
-        return true;
-      case 4:
-        // Attractive SweetAlert for all required fields in Step 4
-        if (!form.numEmployees || isNaN(form.numEmployees) || Number(form.numEmployees) < 1) {
-          Swal.fire({
-            icon: 'error',
-            title: '<span style="color:#d33;font-weight:700;">Number of Employees Required</span>',
-            html: `<div style="font-size:1.1em;color:#333;">Please enter the number of employees/drivers (including yourself, numbers only).</div>`,
-            background: '#fff6f6',
-            iconColor: '#d33',
-            showClass: { popup: 'animate__animated animate__shakeX' },
-            width: 400,
-            backdrop: 'rgba(220,53,69,0.08)',
-            confirmButtonColor: '#d33',
-            confirmButtonText: 'OK'
-          });
-          return false;
-        }
-        if (!form.workRadius) {
-          Swal.fire({
-            icon: 'error',
-            title: '<span style="color:#d33;font-weight:700;">Work Radius Required</span>',
-            html: `<div style="font-size:1.1em;color:#333;">Please select your preferred work radius.</div>`,
-            background: '#fff6f6',
-            iconColor: '#d33',
-            showClass: { popup: 'animate__animated animate__shakeX' },
-            width: 400,
-            backdrop: 'rgba(220,53,69,0.08)',
-            confirmButtonColor: '#d33',
-            confirmButtonText: 'OK'
-          });
-          return false;
-        }
-        if (!form.shiftWillingness) {
-          Swal.fire({
-            icon: 'error',
-            title: '<span style="color:#d33;font-weight:700;">Shift Flexibility Required</span>',
-            html: `<div style="font-size:1.1em;color:#333;">Please indicate your willingness to work 10–12 hour shifts.</div>`,
-            background: '#fff6f6',
-            iconColor: '#d33',
-            showClass: { popup: 'animate__animated animate__shakeX' },
-            width: 400,
-            backdrop: 'rgba(220,53,69,0.08)',
-            confirmButtonColor: '#d33',
-            confirmButtonText: 'OK'
-          });
-          return false;
-        }
-        if (!form.regions) {
-          Swal.fire({
-            icon: 'error',
-            title: '<span style="color:#d33;font-weight:700;">Preferred States/Regions Required</span>',
-            html: `<div style="font-size:1.1em;color:#333;">Please list the regions or states you are willing to work in.</div>`,
-            background: '#fff6f6',
-            iconColor: '#d33',
-            showClass: { popup: 'animate__animated animate__shakeX' },
-            width: 400,
-            backdrop: 'rgba(220,53,69,0.08)',
-            confirmButtonColor: '#d33',
-            confirmButtonText: 'OK'
-          });
-          return false;
-        }
-        if (!form.startDate) {
-          Swal.fire({
-            icon: 'error',
-            title: '<span style="color:#d33;font-weight:700;">Start Availability Required</span>',
-            html: `<div style="font-size:1.1em;color:#333;">Please select when you would be ready to start.</div>`,
-            background: '#fff6f6',
-            iconColor: '#d33',
-            showClass: { popup: 'animate__animated animate__shakeX' },
-            width: 400,
-            backdrop: 'rgba(220,53,69,0.08)',
-            confirmButtonColor: '#d33',
-            confirmButtonText: 'OK'
-          });
-          return false;
-        }
-        if (!form.weeklyAvailability) {
-          Swal.fire({
-            icon: 'error',
-            title: '<span style="color:#d33;font-weight:700;">Weekly Availability Required</span>',
-            html: `<div style="font-size:1.1em;color:#333;">Please select your expected weekly availability.</div>`,
-            background: '#fff6f6',
-            iconColor: '#d33',
-            showClass: { popup: 'animate__animated animate__shakeX' },
-            width: 400,
-            backdrop: 'rgba(220,53,69,0.08)',
-            confirmButtonColor: '#d33',
-            confirmButtonText: 'OK'
-          });
-          return false;
-        }
-        return true;
-      case 5:
-        // Attractive SweetAlert for all required fields in Step 5
-        if (!form.insuranceCoverage) {
-          Swal.fire({
-            icon: 'error',
-            title: '<span style="color:#d33;font-weight:700;">Insurance Coverage Required</span>',
-            html: `<div style="font-size:1.1em;color:#333;">Please select your current insurance coverage.</div>`,
-            background: '#fff6f6',
-            iconColor: '#d33',
-            showClass: { popup: 'animate__animated animate__shakeX' },
-            width: 400,
-            backdrop: 'rgba(220,53,69,0.08)',
-            confirmButtonColor: '#d33',
-            confirmButtonText: 'OK'
-          });
-          return false;
-        }
-        if (!form.cargoCoverage) {
-          Swal.fire({
-            icon: 'error',
-            title: '<span style="color:#d33;font-weight:700;">Cargo Coverage Required</span>',
-            html: `<div style="font-size:1.1em;color:#333;">Please indicate if you also have cargo coverage.</div>`,
-            background: '#fff6f6',
-            iconColor: '#d33',
-            showClass: { popup: 'animate__animated animate__shakeX' },
-            width: 400,
-            backdrop: 'rgba(220,53,69,0.08)',
-            confirmButtonColor: '#d33',
-            confirmButtonText: 'OK'
-          });
-          return false;
-        }
-        if (!form.insuranceExpiration) {
-          Swal.fire({
-            icon: 'error',
-            title: '<span style="color:#d33;font-weight:700;">Insurance Expiry Required</span>',
-            html: `<div style="font-size:1.1em;color:#333;">Please enter your insurance policy expiration date.</div>`,
-            background: '#fff6f6',
-            iconColor: '#d33',
-            showClass: { popup: 'animate__animated animate__shakeX' },
-            width: 400,
-            backdrop: 'rgba(220,53,69,0.08)',
-            confirmButtonColor: '#d33',
-            confirmButtonText: 'OK'
-          });
-          return false;
-        }
-        if (!form.workmansComp) {
-          Swal.fire({
-            icon: 'error',
-            title: '<span style="color:#d33;font-weight:700;">Workman\'s Comp Required</span>',
-            html: `<div style="font-size:1.1em;color:#333;">Please indicate if you carry Workman's Comp or Occupational Accident Policy.</div>`,
-            background: '#fff6f6',
-            iconColor: '#d33',
-            showClass: { popup: 'animate__animated animate__shakeX' },
-            width: 400,
-            backdrop: 'rgba(220,53,69,0.08)',
-            confirmButtonColor: '#d33',
-            confirmButtonText: 'OK'
-          });
-          return false;
-        }
-        if (!form.addTruckStaffer) {
-          Swal.fire({
-            icon: 'error',
-            title: '<span style="color:#d33;font-weight:700;">Certificate Holder Required</span>',
-            html: `<div style="font-size:1.1em;color:#333;">Please indicate if you are willing to add TruckStaffer as Certificate Holder.</div>`,
-            background: '#fff6f6',
-            iconColor: '#d33',
-            showClass: { popup: 'animate__animated animate__shakeX' },
-            width: 400,
-            backdrop: 'rgba(220,53,69,0.08)',
-            confirmButtonColor: '#d33',
-            confirmButtonText: 'OK'
-          });
-          return false;
-        }
-        return true;
-      case 6:
-        // Attractive SweetAlert for all required fields in Step 6
-        if (!form.felony) {
-          Swal.fire({
-            icon: 'error',
-            title: '<span style="color:#d33;font-weight:700;">Felony Conviction Status Required</span>',
-            html: `<div style="font-size:1.1em;color:#333;">Please indicate whether you have ever been convicted of a felony or major traffic violation.</div>`,
-            background: '#fff6f6',
-            iconColor: '#d33',
-            showClass: { popup: 'animate__animated animate__shakeX' },
-            width: 400,
-            backdrop: 'rgba(220,53,69,0.08)',
-            confirmButtonColor: '#d33',
-            confirmButtonText: 'OK'
-          });
-          return false;
-        }
-        if (!form.drugTesting) {
-          Swal.fire({
-            icon: 'error',
-            title: '<span style="color:#d33;font-weight:700;">Drug Testing Willingness Required</span>',
-            html: `<div style="font-size:1.1em;color:#333;">Please indicate whether you are willing to undergo drug testing if required.</div>`,
-            background: '#fff6f6',
-            iconColor: '#d33',
-            showClass: { popup: 'animate__animated animate__shakeX' },
-            width: 400,
-            backdrop: 'rgba(220,53,69,0.08)',
-            confirmButtonColor: '#d33',
-            confirmButtonText: 'OK'
-          });
-          return false;
-        }
-        if (!form.enrolledTesting) {
-          Swal.fire({
-            icon: 'error',
-            title: '<span style="color:#d33;font-weight:700;">Random Testing Enrollment Required</span>',
-            html: `<div style="font-size:1.1em;color:#333;">Please indicate if you are enrolled in a random drug/alcohol testing program.</div>`,
-            background: '#fff6f6',
-            iconColor: '#d33',
-            showClass: { popup: 'animate__animated animate__shakeX' },
-            width: 400,
-            backdrop: 'rgba(220,53,69,0.08)',
-            confirmButtonColor: '#d33',
-            confirmButtonText: 'OK'
-          });
-          return false;
-        }
-        if (!form.safetyViolations) {
-          Swal.fire({
-            icon: 'error',
-            title: '<span style="color:#d33;font-weight:700;">Safety Violations Info Required</span>',
-            html: `<div style="font-size:1.1em;color:#333;">Please indicate if you have any current safety violations or outstanding compliance issues.</div>`,
-            background: '#fff6f6',
-            iconColor: '#d33',
-            showClass: { popup: 'animate__animated animate__shakeX' },
-            width: 400,
-            backdrop: 'rgba(220,53,69,0.08)',
-            confirmButtonColor: '#d33',
-            confirmButtonText: 'OK'
-          });
-          return false;
-        }
-        if (!form.pendingLawsuits) {
-          Swal.fire({
-            icon: 'error',
-            title: '<span style="color:#d33;font-weight:700;">Legal Issues Info Required</span>',
-            html: `<div style="font-size:1.1em;color:#333;">Please indicate if you have any pending lawsuits, liens, or judgments.</div>`,
-            background: '#fff6f6',
-            iconColor: '#d33',
-            showClass: { popup: 'animate__animated animate__shakeX' },
-            width: 400,
-            backdrop: 'rgba(220,53,69,0.08)',
-            confirmButtonColor: '#d33',
-            confirmButtonText: 'OK'
-          });
-          return false;
-        }
-        return true;
-      case 7:
-        // Attractive SweetAlert for all required fields in Step 7
-        if (!form.currentContracts) {
-          Swal.fire({
-            icon: 'error',
-            title: '<span style="color:#d33;font-weight:700;">Current Contract Status Required</span>',
-            html: `<div style="font-size:1.1em;color:#333;">Please indicate your current contract status with another project/company.</div>`,
-            background: '#fff6f6',
-            iconColor: '#d33',
-            showClass: { popup: 'animate__animated animate__shakeX' },
-            width: 400,
-            backdrop: 'rgba(220,53,69,0.08)',
-            confirmButtonColor: '#d33',
-            confirmButtonText: 'OK'
-          });
-          return false;
-        }
-        if (!form.dispatchServices) {
-          Swal.fire({
-            icon: 'error',
-            title: '<span style="color:#d33;font-weight:700;">Dispatch Services Info Required</span>',
-            html: `<div style="font-size:1.1em;color:#333;">Please indicate if you currently work with dispatch services or brokers.</div>`,
-            background: '#fff6f6',
-            iconColor: '#d33',
-            showClass: { popup: 'animate__animated animate__shakeX' },
-            width: 400,
-            backdrop: 'rgba(220,53,69,0.08)',
-            confirmButtonColor: '#d33',
-            confirmButtonText: 'OK'
-          });
-          return false;
-        }
-        if (!form.telematics) {
-          Swal.fire({
-            icon: 'error',
-            title: '<span style="color:#d33;font-weight:700;">Telematics/GPS Info Required</span>',
-            html: `<div style="font-size:1.1em;color:#333;">Please indicate if you use telematics or GPS tracking.</div>`,
-            background: '#fff6f6',
-            iconColor: '#d33',
-            showClass: { popup: 'animate__animated animate__shakeX' },
-            width: 400,
-            backdrop: 'rgba(220,53,69,0.08)',
-            confirmButtonColor: '#d33',
-            confirmButtonText: 'OK'
-          });
-          return false;
-        }
-        if (!form.maintenanceInterest) {
-          Swal.fire({
-            icon: 'error',
-            title: '<span style="color:#d33;font-weight:700;">Maintenance Discount Interest Required</span>',
-            html: `<div style="font-size:1.1em;color:#333;">Please indicate if you are interested in priority maintenance discounts.</div>`,
-            background: '#fff6f6',
-            iconColor: '#d33',
-            showClass: { popup: 'animate__animated animate__shakeX' },
-            width: 400,
-            backdrop: 'rgba(220,53,69,0.08)',
-            confirmButtonColor: '#d33',
-            confirmButtonText: 'OK'
-          });
-          return false;
-        }
-        return true;
-      default:
-        return true;
-    }
+  const showValidationError = (title, message) => {
+    Swal.fire({
+      icon: "error",
+      title: `<span style="font-size: 20px; font-weight: 600; color: #1e293b;">${title}</span>`,
+      html: `<div style="font-size: 14px; color: #64748b;">${message}</div>`,
+      background: "linear-gradient(145deg, #ffffff 0%, #f8fafc 100%)",
+      color: "#334155",
+      iconColor: "#f87171",
+      confirmButtonText: "Retry",
+      confirmButtonColor: "#6366f1",
+      buttonsStyling: true,
+      width: 400, // tighter width
+      padding: "1rem",
+      customClass: {
+        popup: "beautiful-error-popup",
+        title: "beautiful-title",
+        confirmButton: "beautiful-confirm-btn",
+      },
+      backdrop: "rgba(100, 116, 139, 0.3)",
+
+      showClass: {
+        popup: "animate__animated animate__bounceIn animate__faster",
+      }
+    });
   };
+
+  const validateCurrentStep = () => {
+    return validateFormStep(form, currentStep); // form must be available in your component state
+  };
+
+  // Validate current step
+  const validateFormStep = (form, step) => {
+    if (step === 1) {
+      if (
+        !form.fullName ||
+        form.fullName.trim().length < 2 ||
+        !validateName(form.fullName)
+      ) {
+        showValidationError(
+          "Invalid Full Name",
+          "Please enter a valid full name (letters only, minimum 2 characters)."
+        );
+        return false;
+      }
+      if (!form.companyAddress || form.companyAddress.trim().length < 3) {
+        showValidationError(
+          "Company Address Required",
+          "Please enter your company address."
+        );
+        return false;
+      }
+      if (!form.businessEIN || form.businessEIN.trim().length < 6) {
+        showValidationError(
+          "Business EIN Required",
+          "Please enter your Business EIN."
+        );
+        return false;
+      }
+      if (!form.phone || !validatePhoneNumber(form.phone)) {
+        showValidationError(
+          "Invalid Phone Number",
+          "Please enter a valid phone number (minimum 10 digits)."
+        );
+        return false;
+      }
+      // Skip email validation for existing users - email is already verified during login
+      // if (!form.email || !validateEmail(form.email)) {
+      //   showValidationError(
+      //     "Invalid Email",
+      //     "Please enter a valid email address."
+      //   );
+      //   return false;
+      // }
+      if (!form.businessStructure || form.businessStructure.trim().length < 2) {
+        showValidationError(
+          "Business Structure Required",
+          "Please select your business structure."
+        );
+        return false;
+      }
+    }
+
+    if (step === 2) {
+      if (!form.ownership) {
+        showValidationError(
+          "Ownership Status Required",
+          "Please select whether you currently own or lease a dump truck."
+        );
+        return false;
+      }
+      if (!form.equipmentType) {
+        showValidationError(
+          "Equipment Type Missing",
+          "Please enter your equipment type (e.g., Tri-Axle, Quad-Axle, etc.)."
+        );
+        return false;
+      }
+      if (!form.yearMakeModel) {
+        showValidationError(
+          "Truck Details Missing",
+          "Please enter your truck year/make/model."
+        );
+        return false;
+      }
+      if (!form.vin) {
+        showValidationError(
+          "VIN Required",
+          "Please enter your truck VIN number."
+        );
+        return false;
+      }
+      if (!form.tarp) {
+        showValidationError(
+          "Tarp System Info Missing",
+          "Please indicate if your truck is equipped with a tarp system."
+        );
+        return false;
+      }
+      if (!form.additionalTrucks) {
+        showValidationError(
+          "Additional Trucks Info Missing",
+          "Please indicate if you have additional trucks available."
+        );
+        return false;
+      }
+      if (!form.dotInspection) {
+        showValidationError(
+          "DOT Certificate Info Missing",
+          "Please indicate if you have a current DOT inspection certificate."
+        );
+        return false;
+      }
+      if (!form.backupTrucks) {
+        showValidationError(
+          "Backup Trucks Info Missing",
+          "Please indicate if you have backup trucks or access to rentals."
+        );
+        return false;
+      }
+    }
+
+  if (step === 3) {
+    if (!form.cdlStatus) {
+      showValidationError('CDL Status Required', 'Please select your CDL status.');
+      return false;
+    }
+    if (!form.cdlSuspended) {
+      showValidationError('CDL Suspension Info Required', 'Please indicate if your CDL was ever suspended or revoked.');
+      return false;
+    }
+    if (!form.yearsExperience || isNaN(form.yearsExperience) || Number(form.yearsExperience) < 0) {
+      showValidationError('Years of Experience Required', 'Please enter your years in trucking/dump hauling business (numbers only).');
+      return false;
+    }
+    if (!form.materialsHauled || form.materialsHauled.length === 0) {
+      showValidationError('Materials Hauled Required', 'Please select the types of materials you have hauled.');
+      return false;
+    }
+    if (!form.govContracts) {
+      showValidationError('Government Contracts Info Required', 'Please indicate if you have worked on government or DOT contracts.');
+      return false;
+    }
+  }
+
+  if (step === 4) {
+    if (!form.numEmployees || isNaN(form.numEmployees) || Number(form.numEmployees) < 1) {
+      showValidationError('Number of Employees Required', 'Please enter the number of employees/drivers (including yourself, numbers only).');
+      return false;
+    }
+    if (!form.workRadius) {
+      showValidationError('Work Radius Required', 'Please select your preferred work radius.');
+      return false;
+    }
+    if (!form.shiftWillingness) {
+      showValidationError('Shift Flexibility Required', 'Please indicate your willingness to work 10–12 hour shifts.');
+      return false;
+    }
+    if (!form.regions) {
+      showValidationError('Preferred States/Regions Required', 'Please list the regions or states you are willing to work in.');
+      return false;
+    }
+    if (!form.startDate) {
+      showValidationError('Start Availability Required', 'Please select when you would be ready to start.');
+      return false;
+    }
+    if (!form.weeklyAvailability) {
+      showValidationError('Weekly Availability Required', 'Please select your expected weekly availability.');
+      return false;
+    }
+  }
+
+  if (step === 5) {
+    if (!form.insuranceCoverage) {
+      showValidationError('Insurance Coverage Required', 'Please select your current insurance coverage.');
+      return false;
+    }
+    if (!form.cargoCoverage) {
+      showValidationError('Cargo Coverage Required', 'Please indicate if you also have cargo coverage.');
+      return false;
+    }
+    if (!form.insuranceExpiration) {
+      showValidationError('Insurance Expiry Required', 'Please enter your insurance policy expiration date.');
+      return false;
+    }
+    if (!form.workmansComp) {
+      showValidationError('Workman\'s Comp Required', 'Please indicate if you carry Workman\'s Comp or Occupational Accident Policy.');
+      return false;
+    }
+    if (!form.addTruckStaffer) {
+      showValidationError('Certificate Holder Required', 'Please indicate if you are willing to add TruckStaffer as Certificate Holder.');
+      return false;
+    }
+  }
+
+  if (step === 6) {
+    if (!form.felony) {
+      showValidationError(
+        'Felony Conviction Status Required',
+        'Please indicate whether you have ever been convicted of a felony or major traffic violation.'
+      );
+      return false;
+    }
+    if (!form.drugTesting) {
+      showValidationError(
+        'Drug Testing Willingness Required',
+        'Please indicate whether you are willing to undergo drug testing if required.'
+      );
+      return false;
+    }
+    if (!form.enrolledTesting) {
+      showValidationError(
+        'Random Testing Enrollment Required',
+        'Please indicate if you are enrolled in a random drug/alcohol testing program.'
+      );
+      return false;
+    }
+    if (!form.safetyViolations) {
+      showValidationError(
+        'Safety Violations Info Required',
+        'Please indicate if you have any current safety violations or outstanding compliance issues.'
+      );
+      return false;
+    }
+    if (!form.pendingLawsuits) {
+      showValidationError(
+        'Legal Issues Info Required',
+        'Please indicate if you have any pending lawsuits, liens, or judgments.'
+      );
+      return false;
+    }
+  }
+
+  if (step === 7) {
+    if (!form.currentContracts) {
+      showValidationError(
+        'Current Contract Status Required',
+        'Please indicate your current contract status with another project/company.'
+      );
+      return false;
+    }
+    if (!form.dispatchServices) {
+      showValidationError(
+        'Dispatch Services Info Required',
+        'Please indicate if you currently work with dispatch services or brokers.'
+      );
+      return false;
+    }
+    if (!form.telematics) {
+      showValidationError(
+        'Telematics/GPS Info Required',
+        'Please indicate if you use telematics or GPS tracking.'
+      );
+      return false;
+    }
+    if (!form.maintenanceInterest) {
+      showValidationError(
+        'Maintenance Discount Interest Required',
+        'Please indicate if you are interested in priority maintenance discounts.'
+      );
+      return false;
+    }
+  }
+    return true;
+};
+
 
   // Check for missing important information at the end
   const getMissingImportantFields = () => {
     const missingFields = [];
-    
+
     // Company Information
     if (!form.companyName) missingFields.push("Company Name");
     if (!form.businessEIN) missingFields.push("Business EIN");
     if (!form.mcDotNumber) missingFields.push("MC/DOT Number");
-    
+
     // Equipment Details
     if (!form.yearMakeModel) missingFields.push("Year/Make/Model");
     if (!form.vins.length === 0) missingFields.push("Truck VIN Number(s)");
     if (!form.gvwr) missingFields.push("Truck GVWR");
-    
+
     // CDL & Credentials
     if (!form.cdlUpload) missingFields.push("CDL Upload");
     if (!form.medCardUpload) missingFields.push("DOT Medical Card");
-    
+
     // Insurance & Documents
     if (!form.coiUpload) missingFields.push("Certificate of Insurance");
-    if (!form.businessDocs.length === 0) missingFields.push("Business Documents");
-    
+    if (!form.businessDocs.length === 0)
+      missingFields.push("Business Documents");
+
     return missingFields;
   };
 
@@ -939,7 +617,7 @@ const OrderByFollowingStep = () => {
           cdl_suspended: form.cdlSuspended === "Yes",
           experience_years: form.yearsExperience,
           has_highway_experience: form.highwayExperience === "Yes",
-          materials_hauled: form.materialsHauled.join(', '),
+          materials_hauled: form.materialsHauled.join(", "),
           has_gov_contracts: form.govContracts === "Yes",
         };
       case 4:
@@ -972,7 +650,8 @@ const OrderByFollowingStep = () => {
           current_contract_status: form.currentContracts,
           using_dispatch_services: form.dispatchServices === "Yes",
           using_telematics: form.telematics === "Yes",
-          interested_in_maintenance_discount: form.maintenanceInterest === "Yes",
+          interested_in_maintenance_discount:
+            form.maintenanceInterest === "Yes",
           additional_comments: form.additionalComments,
         };
       default:
@@ -985,9 +664,9 @@ const OrderByFollowingStep = () => {
     const token = localStorage.getItem("token");
     if (!token) {
       Swal.fire({
-        icon: 'error',
-        title: 'Authentication Required',
-        text: 'Please log in to continue.'
+        icon: "error",
+        title: "Authentication Required",
+        text: "Please log in to continue.",
       });
       setError("Authentication required");
       return false;
@@ -998,15 +677,16 @@ const OrderByFollowingStep = () => {
 
     try {
       const stepData = getStepData(step);
-      // console.log(`Submitting step ${step} data:`, stepData); 
+      // console.log(`Submitting step ${step} data:`, stepData);
       // returning complete data object from getStepData() filled in step1
       // console.log(`Current applicationId:`, applicationId);
-      //currently it is null 
+      //currently it is null
 
       // For step 1, we don't have applicationId yet, so use a different endpoint
-      const url = step === 1 
-        ? `https://admin.truckstaffer.com/api/application/step${step}`
-        : `https://admin.truckstaffer.com/api/application/${applicationId}/step${step}`;
+      const url =
+        step === 1
+          ? `https://admin.truckstaffer.com/api/application/step${step}`
+          : `https://admin.truckstaffer.com/api/application/${applicationId}/step${step}`;
 
       // console.log(`Making request to:`, url);
       // Making request to: https://admin.truckstaffer.com/api/application/step1 running at step 1 with error
@@ -1015,7 +695,7 @@ const OrderByFollowingStep = () => {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "Authorization": `Bearer ${token}`,
+          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify(stepData),
       });
@@ -1031,20 +711,22 @@ const OrderByFollowingStep = () => {
         const textResponse = await response.text();
         let errorMsg = `Server error (${response.status}). Please try again.`;
         if (response.status === 500) {
-          errorMsg = "Server error: ApplicationController not found. Please contact the backend team to create the missing controller.";
+          errorMsg =
+            "Server error: ApplicationController not found. Please contact the backend team to create the missing controller.";
         } else if (response.status === 401) {
           errorMsg = "Authentication failed. Please log in again.";
           localStorage.removeItem("token");
           navigate("/sign-in");
         } else if (response.status === 403) {
-          errorMsg = "Access denied. You don't have permission to perform this action.";
+          errorMsg =
+            "Access denied. You don't have permission to perform this action.";
         }
         Swal.fire({
-          icon: 'error',
-          title: 'Server Error',
+          icon: "error",
+          title: "Server Error",
           text: errorMsg,
-          confirmButtonColor: '#3085d6',
-          confirmButtonText: 'OK'
+          confirmButtonColor: "#3085d6",
+          confirmButtonText: "OK",
         });
         setError(errorMsg);
         return false;
@@ -1057,19 +739,26 @@ const OrderByFollowingStep = () => {
         // If this is step 1 and we get a successful response, extract the application ID
         if (step === 1) {
           // Check multiple possible locations for application_id
-          const applicationId = data.application_id || data.data?.application_id || data.id || data.applicationId;
+          const applicationId =
+            data.application_id ||
+            data.data?.application_id ||
+            data.id ||
+            data.applicationId;
           if (applicationId) {
             setApplicationId(applicationId);
             console.log(`Application ID received: ${applicationId}`);
           } else {
-            console.warn('Step 1 successful but no application_id found in response:', data);
+            console.warn(
+              "Step 1 successful but no application_id found in response:",
+              data
+            );
             // For now, we'll continue but this will cause issues with subsequent steps
             // The backend needs to return the application_id
           }
         }
-        
+
         // Only add step to completedSteps if it's not already there
-        setCompletedSteps(prev => {
+        setCompletedSteps((prev) => {
           if (!prev.includes(step)) {
             return [...prev, step];
           }
@@ -1078,9 +767,10 @@ const OrderByFollowingStep = () => {
         return true;
       } else {
         // Show exact error message from API, including validation errors
-        let errorMsg = data.message || data.error || `Failed to submit step ${step}`;
+        let errorMsg =
+          data.message || data.error || `Failed to submit step ${step}`;
         // If validation errors exist, show them in detail
-        if (data.errors && typeof data.errors === 'object') {
+        if (data.errors && typeof data.errors === "object") {
           errorMsg = "Please fix the following errors:";
           errorMsg += "<ul style='text-align:left; margin-top: 10px;'>";
           Object.entries(data.errors).forEach(([field, msgs]) => {
@@ -1090,31 +780,31 @@ const OrderByFollowingStep = () => {
           });
           errorMsg += "</ul>";
         }
-        Swal.fire({
-          icon: 'error',
-          title: 'Error',
-          html: errorMsg,
-          confirmButtonColor: '#3085d6',
-          confirmButtonText: 'OK'
-        });
-        setError(errorMsg);
-        return false;
+        // Swal.fire({
+        //   icon: "error",
+        //   title: "Error",
+        //   html: errorMsg,
+        //   confirmButtonColor: "#3085d6",
+        //   confirmButtonText: "OK",
+        // });
+        // setError(errorMsg);
+        // return true;
       }
     } catch (err) {
       console.error(`Error submitting step ${step}:`, err);
-      
+
       let errorMsg = "An unexpected error occurred. Please try again.";
-      if (err.name === 'SyntaxError') {
+      if (err.name === "SyntaxError") {
         errorMsg = "Server returned invalid response. Please try again later.";
-      } else if (err.name === 'TypeError' && err.message.includes('fetch')) {
+      } else if (err.name === "TypeError" && err.message.includes("fetch")) {
         errorMsg = "Network error. Please check your internet connection.";
       }
       Swal.fire({
-        icon: 'error',
-        title: 'Connection Error',
+        icon: "error",
+        title: "Connection Error",
         text: errorMsg,
-        confirmButtonColor: '#3085d6',
-        confirmButtonText: 'OK'
+        confirmButtonColor: "#3085d6",
+        confirmButtonText: "OK",
       });
       setError(errorMsg);
       return false;
@@ -1145,7 +835,7 @@ const OrderByFollowingStep = () => {
         setShowFinalValidation(true);
         return;
       }
-      
+
       // All good, proceed to summary
       navigate("/application-summary");
       return;
@@ -1174,150 +864,169 @@ const OrderByFollowingStep = () => {
           <div className="card-body">
             <h6 className="mb-4 text-xl">Owner-Operator Application</h6>
             <p className="text-neutral-500">
-              Please fill out all required information to begin your application.
+              Please fill out all required information to begin your
+              application.
             </p>
 
             <div className="form-wizard">
               <form>
                 {/* Enhanced step indicator */}
-                 <div className="mb-6">
-                   <div className="d-flex align-items-center justify-content-between mb-3">
-                     <h6 className="text-lg fw-semibold text-primary-light mb-0">
-                       Step {Math.min(currentStep, 7)} of 7
-                     </h6>
-                     <div className="d-flex align-items-center gap-2">
-                       <span className="text-sm text-success-600 fw-medium">
-                         {completedSteps.length} completed
-                       </span>
-                       <div className="bg-success-100 px-3 py-2 rounded-pill">
-                         <span className="text-xs text-success-700 fw-bold">
-                           {Math.round((completedSteps.length / 7) * 100)}%
-                         </span>
-                       </div>
-                     </div>
-                   </div>
-                   
-                   {/* Progress bar */}
-                   <div className="progress mb-3" style={{ height: '8px' }}>
-                     <div 
-                       className="progress-bar bg-success" 
-                       role="progressbar" 
-                       style={{ width: `${(completedSteps.length / 7) * 100}%` }}
-                       aria-valuenow={completedSteps.length} 
-                       aria-valuemin="0" 
-                       aria-valuemax="7"
-                     ></div>
-                   </div>
-                   
-                   {/* Step names */}
-                   <div className="d-flex justify-content-between align-items-center">
-                     {[
-                       { num: 1, name: "Contact Info" },
-                       { num: 2, name: "Equipment" },
-                       { num: 3, name: "CDL & Credentials" },
-                       { num: 4, name: "Operations" },
-                       { num: 5, name: "Insurance" },
-                       { num: 6, name: "Screening" },
-                       { num: 7, name: "Additional" }
-                     ].map((step, index) => (
-                       <div key={step.num} className="text-center flex-fill">
-                         <div className={`d-inline-flex align-items-center justify-content-center mb-2 ${
-                           currentStep === step.num 
-                             ? 'text-primary-600' 
-                             : completedSteps.includes(step.num) 
-                             ? 'text-success-600' 
-                             : 'text-neutral-400'
-                         }`}>
-                           <div className={`rounded-circle d-flex align-items-center justify-content-center me-2 ${
-                             currentStep === step.num 
-                               ? 'bg-primary-600 text-white' 
-                               : completedSteps.includes(step.num) 
-                               ? 'bg-success-600 text-white' 
-                               : 'bg-neutral-200 text-neutral-500'
-                           }`} style={{ width: '24px', height: '24px', fontSize: '12px', fontWeight: 'bold' }}>
-                             {completedSteps.includes(step.num) ? '✓' : step.num}
-                           </div>
-                           <span className="text-xs fw-medium d-none d-md-inline">{step.name}</span>
-                         </div>
-                       </div>
-                     ))}
-                   </div>
-                 </div>
+                <div className="mb-6">
+                  <div className="d-flex align-items-center justify-content-between mb-3">
+                    <h6 className="text-lg fw-semibold text-primary-light mb-0">
+                      Step {Math.min(currentStep, 7)} of 7
+                    </h6>
+                    <div className="d-flex align-items-center gap-2">
+                      <span className="text-sm text-success-600 fw-medium">
+                        {completedSteps.length} completed
+                      </span>
+                      <div className="bg-success-100 px-3 py-2 rounded-pill">
+                        <span className="text-xs text-success-700 fw-bold">
+                          {Math.round((completedSteps.length / 7) * 100)}%
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Progress bar */}
+                  <div className="progress mb-3" style={{ height: "8px" }}>
+                    <div
+                      className="progress-bar bg-success"
+                      role="progressbar"
+                      style={{ width: `${(completedSteps.length / 7) * 100}%` }}
+                      aria-valuenow={completedSteps.length}
+                      aria-valuemin="0"
+                      aria-valuemax="7"
+                    ></div>
+                  </div>
+
+                  {/* Step names */}
+                  <div className="d-flex justify-content-between align-items-center">
+                    {[
+                      { num: 1, name: "Contact Info" },
+                      { num: 2, name: "Equipment" },
+                      { num: 3, name: "CDL & Credentials" },
+                      { num: 4, name: "Operations" },
+                      { num: 5, name: "Insurance" },
+                      { num: 6, name: "Screening" },
+                      { num: 7, name: "Additional" },
+                    ].map((step, index) => (
+                      <div key={step.num} className="text-center flex-fill">
+                        <div
+                          className={`d-inline-flex align-items-center justify-content-center mb-2 ${
+                            currentStep === step.num
+                              ? "text-primary-600"
+                              : completedSteps.includes(step.num)
+                              ? "text-success-600"
+                              : "text-neutral-400"
+                          }`}
+                        >
+                          <div
+                            className={`rounded-circle d-flex align-items-center justify-content-center me-2 ${
+                              currentStep === step.num
+                                ? "bg-primary-600 text-white"
+                                : completedSteps.includes(step.num)
+                                ? "bg-success-600 text-white"
+                                : "bg-neutral-200 text-neutral-500"
+                            }`}
+                            style={{
+                              width: "24px",
+                              height: "24px",
+                              fontSize: "12px",
+                              fontWeight: "bold",
+                            }}
+                          >
+                            {completedSteps.includes(step.num) ? "✓" : step.num}
+                          </div>
+                          <span className="text-xs fw-medium d-none d-md-inline">
+                            {step.name}
+                          </span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
 
                 {/* Step 1: Contact & Business Info */}
                 {currentStep === 1 && (
                   <fieldset className="wizard-fieldset show">
-                    <h6 className="text-md text-neutral-500 mb-3">Basic Contact & Business Info</h6>
+                    <h6 className="text-md text-neutral-500 mb-3">
+                      Basic Contact & Business Info
+                    </h6>
                     <div className="mb-2">
-                      <span className="text-danger text-sm">All fields marked with * are compulsory.</span>
+                      <span className="text-danger text-sm">
+                        All fields marked with * are compulsory.
+                      </span>
                     </div>
                     <div className="row gy-3">
                       <div className="col-sm-6">
                         <label className="form-label">Full Name*</label>
-                        <input 
-                          type="text" 
-                          className="form-control" 
-                          name="fullName" 
-                          value={form.fullName} 
-                          onChange={handleChange} 
+                        <input
+                          type="text"
+                          className="form-control"
+                          name="fullName"
+                          value={form.fullName}
+                          onChange={handleChange}
                           placeholder="Enter full name (letters only)"
-                          required 
+                          required
                         />
                       </div>
                       <div className="col-sm-6">
-                        <label className="form-label">Business/Company Name</label>
-                        <input 
-                          type="text" 
-                          className="form-control" 
-                          name="companyName" 
-                          value={form.companyName} 
-                          onChange={handleChange} 
+                        <label className="form-label">
+                          Business/Company Name
+                        </label>
+                        <input
+                          type="text"
+                          className="form-control"
+                          name="companyName"
+                          value={form.companyName}
+                          onChange={handleChange}
                           placeholder="Enter company name"
                         />
                       </div>
                       <div className="col-12">
-                        <label className="form-label">Company Address</label>
-                        <input 
-                          type="text" 
-                          className="form-control" 
-                          name="companyAddress" 
-                          value={form.companyAddress} 
-                          onChange={handleChange} 
+                        <label className="form-label">Company Address*</label>
+                        <input
+                          type="text"
+                          className="form-control"
+                          name="companyAddress"
+                          value={form.companyAddress}
+                          onChange={handleChange}
                           placeholder="Enter company address"
                         />
                       </div>
                       <div className="col-sm-6">
                         <label className="form-label">Owner's Name</label>
-                        <input 
-                          type="text" 
-                          className="form-control" 
-                          name="ownerName" 
-                          value={form.ownerName} 
-                          onChange={handleChange} 
+                        <input
+                          type="text"
+                          className="form-control"
+                          name="ownerName"
+                          value={form.ownerName}
+                          onChange={handleChange}
                           placeholder="Enter owner name (letters only)"
                         />
                       </div>
                       <div className="col-sm-6">
-                        <label className="form-label">Business EIN</label>
-                        <input 
-                          type="text" 
-                          className="form-control" 
-                          name="businessEIN" 
-                          value={form.businessEIN} 
-                          onChange={handleChange} 
+                        <label className="form-label">Business EIN*</label>
+                        <input
+                          type="text"
+                          className="form-control"
+                          name="businessEIN"
+                          value={form.businessEIN}
+                          onChange={handleChange}
                           placeholder="Enter EIN (numbers and dashes only)"
                         />
                       </div>
                       <div className="col-sm-6">
                         <label className="form-label">Phone*</label>
-                        <input 
-                          type="text" 
-                          className="form-control" 
-                          name="phone" 
-                          value={form.phone} 
-                          onChange={handleChange} 
+                        <input
+                          type="text"
+                          className="form-control"
+                          name="phone"
+                          value={form.phone}
+                          onChange={handleChange}
                           placeholder="Enter phone number (minimum 10 digits)"
-                          required 
+                          required
                         />
                       </div>
                       <div className="col-sm-6">
@@ -1334,19 +1043,36 @@ const OrderByFollowingStep = () => {
                           }
                           readOnly
                           disabled
-                          style={{ background: "#f5f5f5", color: "#888", cursor: "not-allowed" }}
+                          style={{
+                            background: "#f5f5f5",
+                            color: "#888",
+                            cursor: "not-allowed",
+                          }}
                         />
                       </div>
                       <div className="col-12">
                         <label className="form-label">Company Website</label>
-                        <input type="text" className="form-control" name="website" value={form.website} onChange={handleChange} />
+                        <input
+                          type="text"
+                          className="form-control"
+                          name="website"
+                          value={form.website}
+                          onChange={handleChange}
+                        />
                       </div>
                       <div className="col-sm-6">
-                        <label className="form-label">Business Structure</label>
-                        <select className="form-control" name="businessStructure" value={form.businessStructure} onChange={handleChange}>
+                        <label className="form-label">Business Structure*</label>
+                        <select
+                          className="form-control"
+                          name="businessStructure"
+                          value={form.businessStructure}
+                          onChange={handleChange}
+                        >
                           <option value="">Select</option>
                           <option value="LLC">LLC</option>
-                          <option value="Sole Proprietor">Sole Proprietor</option>
+                          <option value="Sole Proprietor">
+                            Sole Proprietor
+                          </option>
                           <option value="Corporation">Corporation</option>
                           <option value="Partnership">Partnership</option>
                           <option value="Other">Other</option>
@@ -1354,24 +1080,32 @@ const OrderByFollowingStep = () => {
                       </div>
                       <div className="col-sm-6">
                         <label className="form-label">MC or DOT Number</label>
-                        <input 
-                          type="text" 
-                          className="form-control" 
-                          name="mcDotNumber" 
-                          value={form.mcDotNumber} 
-                          onChange={handleChange} 
+                        <input
+                          type="text"
+                          className="form-control"
+                          name="mcDotNumber"
+                          value={form.mcDotNumber}
+                          onChange={handleChange}
                           placeholder="Enter MC/DOT number (letters and numbers only)"
                         />
                       </div>
                       <div className="col-12">
-                        <label className="form-label">How did you hear about TruckStaffer?</label>
-                        <input type="text" className="form-control" name="referralSource" value={form.referralSource} onChange={handleChange} />
+                        <label className="form-label">
+                          How did you hear about TruckStaffer?
+                        </label>
+                        <input
+                          type="text"
+                          className="form-control"
+                          name="referralSource"
+                          value={form.referralSource}
+                          onChange={handleChange}
+                        />
                       </div>
                     </div>
                     <div className="form-group text-end mt-4">
-                      <button 
-                        type="button" 
-                        className="btn btn-primary-600 px-32" 
+                      <button
+                        type="button"
+                        className="btn btn-primary-600 px-32"
                         onClick={nextStep}
                         disabled={loading}
                       >
@@ -1384,43 +1118,73 @@ const OrderByFollowingStep = () => {
                 {/* Step 2: Equipment Details */}
                 {currentStep === 2 && (
                   <fieldset className="wizard-fieldset show">
-                    <h6 className="text-md text-neutral-500 mb-3">Equipment Details</h6>
+                    <h6 className="text-md text-neutral-500 mb-3">
+                      Equipment Details
+                    </h6>
                     <div className="mb-2">
-                      <span className="text-danger text-sm">All fields marked with * are compulsory.</span>
+                      <span className="text-danger text-sm">
+                        All fields marked with * are compulsory.
+                      </span>
                     </div>
                     <div className="row gy-3">
                       <div className="col-sm-6">
-                        <label className="form-label">Do you currently own or lease a dump truck?*</label>
-                        <select className="form-control" name="ownership" value={form.ownership} onChange={handleChange} required>
+                        <label className="form-label">
+                          Do you currently own or lease a dump truck?*
+                        </label>
+                        <select
+                          className="form-control"
+                          name="ownership"
+                          value={form.ownership}
+                          onChange={handleChange}
+                          required
+                        >
                           <option value="">Select</option>
                           <option value="Own">Own</option>
                           <option value="Lease">Lease</option>
-                          <option value="Looking to Purchase/Lease">Looking to Purchase/Lease</option>
+                          <option value="Looking to Purchase/Lease">
+                            Looking to Purchase/Lease
+                          </option>
                         </select>
                       </div>
                       <div className="col-sm-6">
                         <label className="form-label">Equipment Type*</label>
-                        <input type="text" className="form-control" name="equipmentType" value={form.equipmentType} onChange={handleChange} placeholder="Tri-Axle, Quad-Axle, etc." required />
+                        <input
+                          type="text"
+                          className="form-control"
+                          name="equipmentType"
+                          value={form.equipmentType}
+                          onChange={handleChange}
+                          placeholder="Tri-Axle, Quad-Axle, etc."
+                          required
+                        />
                       </div>
                       <div className="col-sm-6">
                         <label className="form-label">Year/Make/Model*</label>
-                        <input type="text" className="form-control" name="yearMakeModel" value={form.yearMakeModel} onChange={handleChange} />
+                        <input
+                          type="text"
+                          className="form-control"
+                          name="yearMakeModel"
+                          value={form.yearMakeModel}
+                          onChange={handleChange}
+                        />
                       </div>
                       <div className="col-sm-6">
-                        <label className="form-label">Truck VIN Number(s)*</label>
+                        <label className="form-label">
+                          Truck VIN Number(s)*
+                        </label>
                         <div className="d-flex gap-2 mb-2">
-                          <input 
-                            type="text" 
-                            className="form-control" 
-                            name="vin" 
-                            value={form.vin} 
-                            onChange={handleChange} 
+                          <input
+                            type="text"
+                            className="form-control"
+                            name="vin"
+                            value={form.vin}
+                            onChange={handleChange}
                             onKeyPress={handleVinKeyPress}
                             placeholder="Enter VIN number"
                           />
-                          <button 
-                            type="button" 
-                            className="btn btn-sm btn-primary" 
+                          <button
+                            type="button"
+                            className="btn btn-sm btn-primary"
                             onClick={handleAddVin}
                             disabled={!form.vin.trim()}
                           >
@@ -1429,10 +1193,15 @@ const OrderByFollowingStep = () => {
                         </div>
                         {form.vins.length > 0 && (
                           <div className="mt-2">
-                            <label className="form-label text-sm">Added VINs:</label>
+                            <label className="form-label text-sm">
+                              Added VINs:
+                            </label>
                             <div className="d-flex flex-wrap gap-2">
                               {form.vins.map((vin, index) => (
-                                <div key={index} className="badge bg-primary d-flex align-items-center gap-2">
+                                <div
+                                  key={index}
+                                  className="badge bg-primary d-flex align-items-center gap-2"
+                                >
                                   {vin}
                                   <button
                                     type="button"
@@ -1448,48 +1217,101 @@ const OrderByFollowingStep = () => {
                       </div>
                       <div className="col-sm-6">
                         <label className="form-label">Truck GVWR</label>
-                        <input type="text" className="form-control" name="gvwr" value={form.gvwr} onChange={handleChange} />
+                        <input
+                          type="text"
+                          className="form-control"
+                          name="gvwr"
+                          value={form.gvwr}
+                          onChange={handleChange}
+                        />
                       </div>
                       <div className="col-sm-6">
-                        <label className="form-label">Is your truck equipped with a tarp system?*</label>
-                        <select className="form-control" name="tarp" value={form.tarp} onChange={handleChange}>
+                        <label className="form-label">
+                          Is your truck equipped with a tarp system?*
+                        </label>
+                        <select
+                          className="form-control"
+                          name="tarp"
+                          value={form.tarp}
+                          onChange={handleChange}
+                        >
                           <option value="">Select</option>
                           <option value="Yes">Yes</option>
                           <option value="No">No</option>
                         </select>
                       </div>
                       <div className="col-sm-6">
-                        <label className="form-label">Do you have additional trucks available?*</label>
-                        <select className="form-control" name="additionalTrucks" value={form.additionalTrucks} onChange={handleChange}>
+                        <label className="form-label">
+                          Do you have additional trucks available?*
+                        </label>
+                        <select
+                          className="form-control"
+                          name="additionalTrucks"
+                          value={form.additionalTrucks}
+                          onChange={handleChange}
+                        >
                           <option value="">Select</option>
                           <option value="Yes">Yes</option>
                           <option value="No">No</option>
                         </select>
                       </div>
                       <div className="col-sm-6">
-                        <label className="form-label">Do you have a current DOT inspection certificate?*</label>
-                        <select className="form-control" name="dotInspection" value={form.dotInspection} onChange={handleChange}>
+                        <label className="form-label">
+                          Do you have a current DOT inspection certificate?*
+                        </label>
+                        <select
+                          className="form-control"
+                          name="dotInspection"
+                          value={form.dotInspection}
+                          onChange={handleChange}
+                        >
                           <option value="">Select</option>
                           <option value="Yes">Yes</option>
                           <option value="No">No</option>
                         </select>
                       </div>
                       <div className="col-sm-6">
-                        <label className="form-label">Do you have backup trucks or access to rentals?*</label>
-                        <select className="form-control" name="backupTrucks" value={form.backupTrucks} onChange={handleChange}>
+                        <label className="form-label">
+                          Do you have backup trucks or access to rentals?*
+                        </label>
+                        <select
+                          className="form-control"
+                          name="backupTrucks"
+                          value={form.backupTrucks}
+                          onChange={handleChange}
+                        >
                           <option value="">Select</option>
                           <option value="Yes">Yes</option>
                           <option value="No">No</option>
                         </select>
                       </div>
                       <div className="col-12">
-                        <label className="form-label">Upload photos of your truck (optional)</label>
-                        <input type="file" className="form-control" multiple onChange={handleFileChange} />
+                        <label className="form-label">
+                          Upload photos of your truck (optional)
+                        </label>
+                        <input
+                          type="file"
+                          className="form-control"
+                          multiple
+                          onChange={handleFileChange}
+                        />
                       </div>
                     </div>
                     <div className="form-group d-flex align-items-center justify-content-end gap-8 mt-4">
-                      <button type="button" className="btn btn-neutral-500 border-neutral-100 px-32" onClick={prevStep} disabled={loading}>Back</button>
-                      <button type="button" className="btn btn-primary-600 px-32" onClick={nextStep} disabled={loading}>
+                      <button
+                        type="button"
+                        className="btn btn-neutral-500 border-neutral-100 px-32"
+                        onClick={prevStep}
+                        disabled={loading}
+                      >
+                        Back
+                      </button>
+                      <button
+                        type="button"
+                        className="btn btn-primary-600 px-32"
+                        onClick={nextStep}
+                        disabled={loading}
+                      >
                         {loading ? "Saving..." : "Next"}
                       </button>
                     </div>
@@ -1499,14 +1321,26 @@ const OrderByFollowingStep = () => {
                 {/* Step 3: CDL & Credentials */}
                 {currentStep === 3 && (
                   <fieldset className="wizard-fieldset show">
-                    <h6 className="text-md text-neutral-500 mb-3">CDL & Driver Credentials</h6>
+                    <h6 className="text-md text-neutral-500 mb-3">
+                      CDL & Driver Credentials
+                    </h6>
                     <div className="mb-2">
-                      <span className="text-danger text-sm">All fields marked with * are compulsory.</span>
+                      <span className="text-danger text-sm">
+                        All fields marked with * are compulsory.
+                      </span>
                     </div>
                     <div className="row gy-3">
                       <div className="col-sm-6">
-                        <label className="form-label">Do you have a valid CDL?*</label>
-                        <select className="form-control" name="cdlStatus" value={form.cdlStatus} onChange={handleChange} required>
+                        <label className="form-label">
+                          Do you have a valid CDL?*
+                        </label>
+                        <select
+                          className="form-control"
+                          name="cdlStatus"
+                          value={form.cdlStatus}
+                          onChange={handleChange}
+                          required
+                        >
                           <option value="">Select</option>
                           <option value="Class A">Class A</option>
                           <option value="Class B">Class B</option>
@@ -1514,39 +1348,75 @@ const OrderByFollowingStep = () => {
                         </select>
                       </div>
                       <div className="col-sm-6">
-                        <label className="form-label">Ever had your CDL suspended or revoked?*</label>
-                        <select className="form-control" name="cdlSuspended" value={form.cdlSuspended} onChange={handleChange}>
+                        <label className="form-label">
+                          Ever had your CDL suspended or revoked?*
+                        </label>
+                        <select
+                          className="form-control"
+                          name="cdlSuspended"
+                          value={form.cdlSuspended}
+                          onChange={handleChange}
+                        >
                           <option value="">Select</option>
                           <option value="Yes">Yes</option>
                           <option value="No">No</option>
                         </select>
                       </div>
                       <div className="col-sm-6">
-                        <label className="form-label">Years in trucking/dump hauling business*</label>
-                        <input type="number" className="form-control" name="yearsExperience" value={form.yearsExperience} onChange={handleChange} min="0" required />
+                        <label className="form-label">
+                          Years in trucking/dump hauling business*
+                        </label>
+                        <input
+                          type="number"
+                          className="form-control"
+                          name="yearsExperience"
+                          value={form.yearsExperience}
+                          onChange={handleChange}
+                          min="0"
+                          required
+                        />
                       </div>
                       <div className="col-12">
-                        <label className="form-label">What types of materials have you hauled?</label>
+                        <label className="form-label">
+                          What types of materials have you hauled?
+                        </label>
                         <div className="d-flex flex-wrap gap-3">
-                          {['Dirt', 'Stone', 'Asphalt', 'Sand', 'Other'].map((mat) => (
-                            <div key={mat} className="form-check">
-                              <input
-                                className="form-check-input"
-                                type="radio"
-                                name="materialsHauled"
-                                id={`mat-${mat}`}
-                                value={mat}
-                                checked={form.materialsHauled.length === 1 && form.materialsHauled[0] === mat}
-                                onChange={handleMaterialsChange}
-                              />
-                              <label className="form-check-label" htmlFor={`mat-${mat}`}>{mat}</label>
-                            </div>
-                          ))}
+                          {["Dirt", "Stone", "Asphalt", "Sand", "Other"].map(
+                            (mat) => (
+                              <div key={mat} className="form-check">
+                                <input
+                                  className="form-check-input"
+                                  type="radio"
+                                  name="materialsHauled"
+                                  id={`mat-${mat}`}
+                                  value={mat}
+                                  checked={
+                                    form.materialsHauled.length === 1 &&
+                                    form.materialsHauled[0] === mat
+                                  }
+                                  onChange={handleMaterialsChange}
+                                />
+                                <label
+                                  className="form-check-label"
+                                  htmlFor={`mat-${mat}`}
+                                >
+                                  {mat}
+                                </label>
+                              </div>
+                            )
+                          )}
                         </div>
                       </div>
                       <div className="col-sm-6">
-                        <label className="form-label">Worked on government or DOT contracts?*</label>
-                        <select className="form-control" name="govContracts" value={form.govContracts} onChange={handleChange}>
+                        <label className="form-label">
+                          Worked on government or DOT contracts?*
+                        </label>
+                        <select
+                          className="form-control"
+                          name="govContracts"
+                          value={form.govContracts}
+                          onChange={handleChange}
+                        >
                           <option value="">Select</option>
                           <option value="Yes">Yes</option>
                           <option value="No">No</option>
@@ -1554,16 +1424,38 @@ const OrderByFollowingStep = () => {
                       </div>
                       <div className="col-sm-6">
                         <label className="form-label">Upload CDL</label>
-                        <input type="file" className="form-control" onChange={handleCDLFile} />
+                        <input
+                          type="file"
+                          className="form-control"
+                          onChange={handleCDLFile}
+                        />
                       </div>
                       <div className="col-sm-6">
-                        <label className="form-label">Upload DOT Medical Card</label>
-                        <input type="file" className="form-control" onChange={handleMedCardFile} />
+                        <label className="form-label">
+                          Upload DOT Medical Card
+                        </label>
+                        <input
+                          type="file"
+                          className="form-control"
+                          onChange={handleMedCardFile}
+                        />
                       </div>
                     </div>
                     <div className="form-group d-flex align-items-center justify-content-end gap-8 mt-4">
-                      <button type="button" className="btn btn-neutral-500 border-neutral-100 px-32" onClick={prevStep} disabled={loading}>Back</button>
-                      <button type="button" className="btn btn-primary-600 px-32" onClick={nextStep} disabled={loading}>
+                      <button
+                        type="button"
+                        className="btn btn-neutral-500 border-neutral-100 px-32"
+                        onClick={prevStep}
+                        disabled={loading}
+                      >
+                        Back
+                      </button>
+                      <button
+                        type="button"
+                        className="btn btn-primary-600 px-32"
+                        onClick={nextStep}
+                        disabled={loading}
+                      >
                         {loading ? "Saving..." : "Next"}
                       </button>
                     </div>
@@ -1573,28 +1465,59 @@ const OrderByFollowingStep = () => {
                 {/* Step 4: Operational Capacity */}
                 {currentStep === 4 && (
                   <fieldset className="wizard-fieldset show">
-                    <h6 className="text-md text-neutral-500 mb-3">Operational Capacity</h6>
+                    <h6 className="text-md text-neutral-500 mb-3">
+                      Operational Capacity
+                    </h6>
                     <div className="mb-2">
-                      <span className="text-danger text-sm">All fields marked with * are compulsory.</span>
+                      <span className="text-danger text-sm">
+                        All fields marked with * are compulsory.
+                      </span>
                     </div>
                     <div className="row gy-3">
                       <div className="col-sm-6">
-                        <label className="form-label">Number of employees/drivers (including yourself)*</label>
-                        <input type="number" className="form-control" name="numEmployees" value={form.numEmployees} onChange={handleChange} min="1" required />
+                        <label className="form-label">
+                          Number of employees/drivers (including yourself)*
+                        </label>
+                        <input
+                          type="number"
+                          className="form-control"
+                          name="numEmployees"
+                          value={form.numEmployees}
+                          onChange={handleChange}
+                          min="1"
+                          required
+                        />
                       </div>
                       <div className="col-sm-6">
-                        <label className="form-label">Preferred Work Radius*</label>
-                        <select className="form-control" name="workRadius" value={form.workRadius} onChange={handleChange} required>
+                        <label className="form-label">
+                          Preferred Work Radius*
+                        </label>
+                        <select
+                          className="form-control"
+                          name="workRadius"
+                          value={form.workRadius}
+                          onChange={handleChange}
+                          required
+                        >
                           <option value="">Select</option>
                           <option value="Local">Local</option>
                           <option value="Regional">Regional</option>
                           <option value="OTR">OTR</option>
-                          <option value="Willing to travel">Willing to travel</option>
+                          <option value="Willing to travel">
+                            Willing to travel
+                          </option>
                         </select>
                       </div>
                       <div className="col-sm-6">
-                        <label className="form-label">Willing to work 10–12 hour shifts?</label>
-                        <select className="form-control" name="shiftWillingness" value={form.shiftWillingness} onChange={handleChange}>
+                        <label className="form-label">
+                          Willing to work 10–12 hour shifts?
+                        </label>
+                        <select
+                          className="form-control"
+                          name="shiftWillingness"
+                          value={form.shiftWillingness}
+                          onChange={handleChange}
+                        >
                           <option value="">Select</option>
                           <option value="Yes">Yes</option>
                           <option value="No">No</option>
@@ -1602,12 +1525,28 @@ const OrderByFollowingStep = () => {
                         </select>
                       </div>
                       <div className="col-sm-6">
-                        <label className="form-label">Regions/states you are willing to work in</label>
-                        <input type="text" className="form-control" name="regions" value={form.regions} onChange={handleChange} placeholder="List regions or states" />
+                        <label className="form-label">
+                          Regions/states you are willing to work in
+                        </label>
+                        <input
+                          type="text"
+                          className="form-control"
+                          name="regions"
+                          value={form.regions}
+                          onChange={handleChange}
+                          placeholder="List regions or states"
+                        />
                       </div>
                       <div className="col-sm-6">
-                        <label className="form-label">When would you be ready to start?</label>
-                        <select className="form-control" name="startDate" value={form.startDate} onChange={handleChange}>
+                        <label className="form-label">
+                          When would you be ready to start?
+                        </label>
+                        <select
+                          className="form-control"
+                          name="startDate"
+                          value={form.startDate}
+                          onChange={handleChange}
+                        >
                           <option value="">Select</option>
                           <option value="Immediately">Immediately</option>
                           <option value="1–2 weeks">1–2 weeks</option>
@@ -1616,8 +1555,15 @@ const OrderByFollowingStep = () => {
                         </select>
                       </div>
                       <div className="col-sm-6">
-                        <label className="form-label">Expected weekly availability</label>
-                        <select className="form-control" name="weeklyAvailability" value={form.weeklyAvailability} onChange={handleChange}>
+                        <label className="form-label">
+                          Expected weekly availability
+                        </label>
+                        <select
+                          className="form-control"
+                          name="weeklyAvailability"
+                          value={form.weeklyAvailability}
+                          onChange={handleChange}
+                        >
                           <option value="">Select</option>
                           <option value="3–4 days">3–4 days</option>
                           <option value="5–6 days">5–6 days</option>
@@ -1626,8 +1572,20 @@ const OrderByFollowingStep = () => {
                       </div>
                     </div>
                     <div className="form-group d-flex align-items-center justify-content-end gap-8 mt-4">
-                      <button type="button" className="btn btn-neutral-500 border-neutral-100 px-32" onClick={prevStep} disabled={loading}>Back</button>
-                      <button type="button" className="btn btn-primary-600 px-32" onClick={nextStep} disabled={loading}>
+                      <button
+                        type="button"
+                        className="btn btn-neutral-500 border-neutral-100 px-32"
+                        onClick={prevStep}
+                        disabled={loading}
+                      >
+                        Back
+                      </button>
+                      <button
+                        type="button"
+                        className="btn btn-primary-600 px-32"
+                        onClick={nextStep}
+                        disabled={loading}
+                      >
                         {loading ? "Saving..." : "Next"}
                       </button>
                     </div>
@@ -1637,35 +1595,72 @@ const OrderByFollowingStep = () => {
                 {/* Step 5: Insurance & Compliance */}
                 {currentStep === 5 && (
                   <fieldset className="wizard-fieldset show">
-                    <h6 className="text-md text-neutral-500 mb-3">Insurance & Compliance</h6>
+                    <h6 className="text-md text-neutral-500 mb-3">
+                      Insurance & Compliance
+                    </h6>
                     <div className="mb-2">
-                      <span className="text-danger text-sm">All fields marked with * are compulsory.</span>
+                      <span className="text-danger text-sm">
+                        All fields marked with * are compulsory.
+                      </span>
                     </div>
                     <div className="row gy-3">
                       <div className="col-sm-6">
-                        <label className="form-label">Current insurance coverage*</label>
-                        <select className="form-control" name="insuranceCoverage" value={form.insuranceCoverage} onChange={handleChange} required>
+                        <label className="form-label">
+                          Current insurance coverage*
+                        </label>
+                        <select
+                          className="form-control"
+                          name="insuranceCoverage"
+                          value={form.insuranceCoverage}
+                          onChange={handleChange}
+                          required
+                        >
                           <option value="">Select</option>
-                          <option value="$1M Liability">Yes – $1M Liability</option>
+                          <option value="$1M Liability">
+                            Yes – $1M Liability
+                          </option>
                           <option value="Less than $1M">Less than $1M</option>
                           <option value="No">No</option>
                         </select>
                       </div>
                       <div className="col-sm-6">
-                        <label className="form-label">Do you also have cargo coverage?*</label>
-                        <select className="form-control" name="cargoCoverage" value={form.cargoCoverage} onChange={handleChange}>
+                        <label className="form-label">
+                          Do you also have cargo coverage?*
+                        </label>
+                        <select
+                          className="form-control"
+                          name="cargoCoverage"
+                          value={form.cargoCoverage}
+                          onChange={handleChange}
+                        >
                           <option value="">Select</option>
                           <option value="Yes">Yes</option>
                           <option value="No">No</option>
                         </select>
                       </div>
                       <div className="col-sm-6">
-                        <label className="form-label">Insurance policy expiration date*</label>
-                        <input type="date" className="form-control" name="insuranceExpiration" value={form.insuranceExpiration} onChange={handleChange} />
+                        <label className="form-label">
+                          Insurance policy expiration date*
+                        </label>
+                        <input
+                          type="date"
+                          className="form-control"
+                          name="insuranceExpiration"
+                          value={form.insuranceExpiration}
+                          onChange={handleChange}
+                        />
                       </div>
                       <div className="col-sm-6">
-                        <label className="form-label">Do you carry Workman's Comp or Occupational Accident Policy?*</label>
-                        <select className="form-control" name="workmansComp" value={form.workmansComp} onChange={handleChange}>
+                        <label className="form-label">
+                          Do you carry Workman's Comp or Occupational Accident
+                          Policy?*
+                        </label>
+                        <select
+                          className="form-control"
+                          name="workmansComp"
+                          value={form.workmansComp}
+                          onChange={handleChange}
+                        >
                           <option value="">Select</option>
                           <option value="Yes">Yes</option>
                           <option value="No">No</option>
@@ -1673,25 +1668,58 @@ const OrderByFollowingStep = () => {
                         </select>
                       </div>
                       <div className="col-sm-6">
-                        <label className="form-label">Willing to add TruckStaffer as Certificate Holder?*</label>
-                        <select className="form-control" name="addTruckStaffer" value={form.addTruckStaffer} onChange={handleChange}>
+                        <label className="form-label">
+                          Willing to add TruckStaffer as Certificate Holder?*
+                        </label>
+                        <select
+                          className="form-control"
+                          name="addTruckStaffer"
+                          value={form.addTruckStaffer}
+                          onChange={handleChange}
+                        >
                           <option value="">Select</option>
                           <option value="Yes">Yes</option>
                           <option value="No">No</option>
                         </select>
                       </div>
                       <div className="col-sm-6">
-                        <label className="form-label">Upload Certificate of Insurance (COI)</label>
-                        <input type="file" className="form-control" onChange={handleCOIFile} />
+                        <label className="form-label">
+                          Upload Certificate of Insurance (COI)
+                        </label>
+                        <input
+                          type="file"
+                          className="form-control"
+                          onChange={handleCOIFile}
+                        />
                       </div>
                       <div className="col-12">
-                        <label className="form-label">Upload Required Business Documents (W9, LLC, EIN, etc.)</label>
-                        <input type="file" className="form-control" multiple onChange={handleBusinessDocs} />
+                        <label className="form-label">
+                          Upload Required Business Documents (W9, LLC, EIN,
+                          etc.)
+                        </label>
+                        <input
+                          type="file"
+                          className="form-control"
+                          multiple
+                          onChange={handleBusinessDocs}
+                        />
                       </div>
                     </div>
                     <div className="form-group d-flex align-items-center justify-content-end gap-8 mt-4">
-                      <button type="button" className="btn btn-neutral-500 border-neutral-100 px-32" onClick={prevStep} disabled={loading}>Back</button>
-                      <button type="button" className="btn btn-primary-600 px-32" onClick={nextStep} disabled={loading}>
+                      <button
+                        type="button"
+                        className="btn btn-neutral-500 border-neutral-100 px-32"
+                        onClick={prevStep}
+                        disabled={loading}
+                      >
+                        Back
+                      </button>
+                      <button
+                        type="button"
+                        className="btn btn-primary-600 px-32"
+                        onClick={nextStep}
+                        disabled={loading}
+                      >
                         {loading ? "Saving..." : "Next"}
                       </button>
                     </div>
@@ -1701,46 +1729,89 @@ const OrderByFollowingStep = () => {
                 {/* Step 6: Screening & Safety */}
                 {currentStep === 6 && (
                   <fieldset className="wizard-fieldset show">
-                    <h6 className="text-md text-neutral-500 mb-3">Screening & Safety*</h6>
+                    <h6 className="text-md text-neutral-500 mb-3">
+                      Screening & Safety*
+                    </h6>
                     <div className="mb-2">
-                      <span className="text-danger text-sm">All fields marked with * are compulsory.</span>
+                      <span className="text-danger text-sm">
+                        All fields marked with * are compulsory.
+                      </span>
                     </div>
                     <div className="row gy-3">
                       <div className="col-sm-6">
-                        <label className="form-label">Ever convicted of a felony or major traffic violation?*</label>
-                        <select className="form-control" name="felony" value={form.felony} onChange={handleChange} required>
+                        <label className="form-label">
+                          Ever convicted of a felony or major traffic
+                          violation?*
+                        </label>
+                        <select
+                          className="form-control"
+                          name="felony"
+                          value={form.felony}
+                          onChange={handleChange}
+                          required
+                        >
                           <option value="">Select</option>
                           <option value="Yes">Yes</option>
                           <option value="No">No</option>
                         </select>
                       </div>
                       <div className="col-sm-6">
-                        <label className="form-label">Willing to undergo drug testing if required?*</label>
-                        <select className="form-control" name="drugTesting" value={form.drugTesting} onChange={handleChange} required>
+                        <label className="form-label">
+                          Willing to undergo drug testing if required?*
+                        </label>
+                        <select
+                          className="form-control"
+                          name="drugTesting"
+                          value={form.drugTesting}
+                          onChange={handleChange}
+                          required
+                        >
                           <option value="">Select</option>
                           <option value="Yes">Yes</option>
                           <option value="No">No</option>
                         </select>
                       </div>
                       <div className="col-sm-6">
-                        <label className="form-label">Enrolled in random drug/alcohol testing program?*</label>
-                        <select className="form-control" name="enrolledTesting" value={form.enrolledTesting} onChange={handleChange}>
+                        <label className="form-label">
+                          Enrolled in random drug/alcohol testing program?*
+                        </label>
+                        <select
+                          className="form-control"
+                          name="enrolledTesting"
+                          value={form.enrolledTesting}
+                          onChange={handleChange}
+                        >
                           <option value="">Select</option>
                           <option value="Yes">Yes</option>
                           <option value="No">No</option>
                         </select>
                       </div>
                       <div className="col-sm-6">
-                        <label className="form-label">Any current safety violations or outstanding compliance issues?*</label>
-                        <select className="form-control" name="safetyViolations" value={form.safetyViolations} onChange={handleChange}>
+                        <label className="form-label">
+                          Any current safety violations or outstanding
+                          compliance issues?*
+                        </label>
+                        <select
+                          className="form-control"
+                          name="safetyViolations"
+                          value={form.safetyViolations}
+                          onChange={handleChange}
+                        >
                           <option value="">Select</option>
                           <option value="Yes">Yes</option>
                           <option value="No">No</option>
                         </select>
                       </div>
                       <div className="col-sm-6">
-                        <label className="form-label">Any pending lawsuits, liens, or judgments?*</label>
-                        <select className="form-control" name="pendingLawsuits" value={form.pendingLawsuits} onChange={handleChange}>
+                        <label className="form-label">
+                          Any pending lawsuits, liens, or judgments?*
+                        </label>
+                        <select
+                          className="form-control"
+                          name="pendingLawsuits"
+                          value={form.pendingLawsuits}
+                          onChange={handleChange}
+                        >
                           <option value="">Select</option>
                           <option value="Yes">Yes</option>
                           <option value="No">No</option>
@@ -1748,8 +1819,20 @@ const OrderByFollowingStep = () => {
                       </div>
                     </div>
                     <div className="form-group d-flex align-items-center justify-content-end gap-8 mt-4">
-                      <button type="button" className="btn btn-neutral-500 border-neutral-100 px-32" onClick={prevStep} disabled={loading}>Back</button>
-                      <button type="button" className="btn btn-primary-600 px-32" onClick={nextStep} disabled={loading}>
+                      <button
+                        type="button"
+                        className="btn btn-neutral-500 border-neutral-100 px-32"
+                        onClick={prevStep}
+                        disabled={loading}
+                      >
+                        Back
+                      </button>
+                      <button
+                        type="button"
+                        className="btn btn-primary-600 px-32"
+                        onClick={nextStep}
+                        disabled={loading}
+                      >
                         {loading ? "Saving..." : "Next"}
                       </button>
                     </div>
@@ -1759,14 +1842,26 @@ const OrderByFollowingStep = () => {
                 {/* Step 7: Additional Information */}
                 {currentStep === 7 && (
                   <fieldset className="wizard-fieldset show">
-                    <h6 className="text-md text-neutral-500 mb-3">Additional Information</h6>
+                    <h6 className="text-md text-neutral-500 mb-3">
+                      Additional Information
+                    </h6>
                     <div className="mb-2">
-                      <span className="text-danger text-sm">All fields marked with * are compulsory.</span>
+                      <span className="text-danger text-sm">
+                        All fields marked with * are compulsory.
+                      </span>
                     </div>
                     <div className="row gy-3">
                       <div className="col-sm-6">
-                        <label className="form-label">Currently under contract with another project/company?*</label>
-                        <select className="form-control" name="currentContracts" value={form.currentContracts} onChange={handleChange}>
+                        <label className="form-label">
+                          Currently under contract with another
+                          project/company?*
+                        </label>
+                        <select
+                          className="form-control"
+                          name="currentContracts"
+                          value={form.currentContracts}
+                          onChange={handleChange}
+                        >
                           <option value="">Select</option>
                           <option value="Available now">Available now</option>
                           <option value="Flexible soon">Flexible soon</option>
@@ -1774,42 +1869,80 @@ const OrderByFollowingStep = () => {
                         </select>
                       </div>
                       <div className="col-sm-6">
-                        <label className="form-label">Currently work with dispatch services or brokers?*</label>
-                        <select className="form-control" name="dispatchServices" value={form.dispatchServices} onChange={handleChange}>
+                        <label className="form-label">
+                          Currently work with dispatch services or brokers?*
+                        </label>
+                        <select
+                          className="form-control"
+                          name="dispatchServices"
+                          value={form.dispatchServices}
+                          onChange={handleChange}
+                        >
                           <option value="">Select</option>
                           <option value="Yes">Yes</option>
                           <option value="No">No</option>
                         </select>
                       </div>
                       <div className="col-sm-6">
-                        <label className="form-label">Use telematics or GPS tracking?*</label>
-                        <select className="form-control" name="telematics" value={form.telematics} onChange={handleChange}>
+                        <label className="form-label">
+                          Use telematics or GPS tracking?*
+                        </label>
+                        <select
+                          className="form-control"
+                          name="telematics"
+                          value={form.telematics}
+                          onChange={handleChange}
+                        >
                           <option value="">Select</option>
                           <option value="Yes">Yes</option>
                           <option value="No">No</option>
                         </select>
                       </div>
                       <div className="col-sm-6">
-                        <label className="form-label">Interested in priority maintenance discounts?*</label>
-                        <select className="form-control" name="maintenanceInterest" value={form.maintenanceInterest} onChange={handleChange}>
+                        <label className="form-label">
+                          Interested in priority maintenance discounts?*
+                        </label>
+                        <select
+                          className="form-control"
+                          name="maintenanceInterest"
+                          value={form.maintenanceInterest}
+                          onChange={handleChange}
+                        >
                           <option value="">Select</option>
                           <option value="Yes">Yes</option>
                           <option value="No">No</option>
                         </select>
                       </div>
                       <div className="col-12">
-                        <label className="form-label">Additional comments, questions, or details</label>
-                        <textarea className="form-control" name="additionalComments" value={form.additionalComments} onChange={handleChange} />
+                        <label className="form-label">
+                          Additional comments, questions, or details
+                        </label>
+                        <textarea
+                          className="form-control"
+                          name="additionalComments"
+                          value={form.additionalComments}
+                          onChange={handleChange}
+                        />
                       </div>
                     </div>
                     <div className="form-group d-flex align-items-center justify-content-end gap-8 mt-4">
-                      <button type="button" className="btn btn-neutral-500 border-neutral-100 px-32" onClick={prevStep}>Back</button>
-                      <button type="button" className="btn btn-primary-600 px-32" onClick={nextStep}>Submit Application</button>
+                      <button
+                        type="button"
+                        className="btn btn-neutral-500 border-neutral-100 px-32"
+                        onClick={prevStep}
+                      >
+                        Back
+                      </button>
+                      <button
+                        type="button"
+                        className="btn btn-primary-600 px-32"
+                        onClick={nextStep}
+                      >
+                        Submit Application
+                      </button>
                     </div>
                   </fieldset>
                 )}
-
-                
               </form>
             </div>
           </div>
@@ -1818,39 +1951,65 @@ const OrderByFollowingStep = () => {
 
       {/* Final Validation Modal */}
       {showFinalValidation && (
-        <div className="modal fade show" style={{ display: 'block' }} tabIndex={-1}>
+        <div
+          className="modal fade show"
+          style={{ display: "block" }}
+          tabIndex={-1}
+        >
           <div className="modal-dialog modal-dialog-centered">
             <div className="modal-content">
               <div className="modal-header">
                 <h5 className="modal-title">Important Information Missing</h5>
-                <button 
-                  
-                  type="button" 
-                  className="btn-close" 
+                <button
+                  type="button"
+                  className="btn-close"
                   onClick={() => setShowFinalValidation(false)}
                 />
               </div>
               <div className="modal-body">
                 <p className="mb-3">
-                  Before submitting your application, please provide the following important information:
+                  Before submitting your application, please provide the
+                  following important information:
                 </p>
                 <ul className="list-group list-group-flush">
                   {missingFields.map((field, index) => (
-                    <li key={index} className="list-group-item d-flex justify-content-between align-items-center">
+                    <li
+                      key={index}
+                      className="list-group-item d-flex justify-content-between align-items-center"
+                    >
                       <span className="text-danger">⚠️ {field}</span>
-                      <button 
-                        type="button" 
+                      <button
+                        type="button"
                         className="btn btn-sm btn-outline-primary"
                         onClick={() => {
                           setShowFinalValidation(false);
                           // Navigate to the appropriate step based on the field
-                          if (['Company Name', 'Business EIN', 'MC/DOT Number'].includes(field)) {
+                          if (
+                            [
+                              "Company Name",
+                              "Business EIN",
+                              "MC/DOT Number",
+                            ].includes(field)
+                          ) {
                             setCurrentStep(1);
-                          } else if (['Year/Make/Model', 'Truck VIN Number(s)', 'Truck GVWR'].includes(field)) {
+                          } else if (
+                            [
+                              "Year/Make/Model",
+                              "Truck VIN Number(s)",
+                              "Truck GVWR",
+                            ].includes(field)
+                          ) {
                             setCurrentStep(2);
-                          } else if (['CDL Upload', 'DOT Medical Card'].includes(field)) {
+                          } else if (
+                            ["CDL Upload", "DOT Medical Card"].includes(field)
+                          ) {
                             setCurrentStep(3);
-                          } else if (['Certificate of Insurance', 'Business Documents'].includes(field)) {
+                          } else if (
+                            [
+                              "Certificate of Insurance",
+                              "Business Documents",
+                            ].includes(field)
+                          ) {
                             setCurrentStep(5);
                           }
                         }}
@@ -1862,21 +2021,22 @@ const OrderByFollowingStep = () => {
                 </ul>
                 <div className="mt-3">
                   <small className="text-secondary">
-                    You can submit your application without these fields, but providing them will help expedite the review process.
+                    You can submit your application without these fields, but
+                    providing them will help expedite the review process.
                   </small>
                 </div>
               </div>
               <div className="modal-footer">
-                <button 
-                  type="button" 
-                  className="btn btn-secondary" 
+                <button
+                  type="button"
+                  className="btn btn-secondary"
                   onClick={() => setShowFinalValidation(false)}
                 >
                   Go Back & Fill
                 </button>
-                <button 
-                  type="button" 
-                  className="btn btn-primary" 
+                <button
+                  type="button"
+                  className="btn btn-primary"
                   onClick={() => {
                     setShowFinalValidation(false);
                     navigate("/application-summary");

@@ -28,15 +28,38 @@ const SignUpLayer = () => {
   if (!name.trim()) {
     Swal.fire({
       icon: 'error',
-      title: '<span style="color:#d33;font-weight:700;">Name Required</span>',
-      html: `<div style="font-size:1.1em;color:#333;">Name is required</div>`,
-      background: '#fff6f6',
-      iconColor: '#d33',
-      showClass: { popup: 'animate__animated animate__shakeX' },
-      width: 400,
-      backdrop: 'rgba(220,53,69,0.08)',
-      confirmButtonColor: '#d33',
-      confirmButtonText: 'OK'
+      title: 'Oops! Something went wrong',
+      html: `
+        <div style="
+          font-size: 16px; 
+          color: #64748b; 
+          line-height: 1.6;
+          margin-top: 12px;
+        ">
+          Name is required
+        </div>
+      `,
+      background: '#ffffff',
+      color: '#1e293b',
+      iconColor: '#ef4444',
+      showConfirmButton: true,
+      confirmButtonText: 'Try Again',
+      confirmButtonColor: '#3b82f6',
+      buttonsStyling: true,
+      customClass: {
+        popup: 'beautiful-error-popup',
+        title: 'beautiful-title',
+        confirmButton: 'beautiful-confirm-btn'
+      },
+      backdrop: 'rgba(15, 23, 42, 0.4)',
+      width: 420,
+      padding: '2rem',
+      showClass: {
+        popup: 'animate__animated animate__fadeInDown animate__faster'
+      },
+      hideClass: {
+        popup: 'animate__animated animate__fadeOutUp animate__faster'
+      }
     });
     return;
   }
@@ -44,15 +67,38 @@ const SignUpLayer = () => {
   if (!email.includes("@") || !email.includes(".")) {
     Swal.fire({
       icon: 'error',
-      title: '<span style="color:#d33;font-weight:700;">Invalid Email</span>',
-      html: `<div style="font-size:1.1em;color:#333;">Invalid email address</div>`,
-      background: '#fff6f6',
-      iconColor: '#d33',
-      showClass: { popup: 'animate__animated animate__shakeX' },
-      width: 400,
-      backdrop: 'rgba(220,53,69,0.08)',
-      confirmButtonColor: '#d33',
-      confirmButtonText: 'OK'
+      title: 'Oops! Something went wrong',
+      html: `
+        <div style="
+          font-size: 16px; 
+          color: #64748b; 
+          line-height: 1.6;
+          margin-top: 12px;
+        ">
+          Invalid email address
+        </div>
+      `,
+      background: '#ffffff',
+      color: '#1e293b',
+      iconColor: '#ef4444',
+      showConfirmButton: true,
+      confirmButtonText: 'Try Again',
+      confirmButtonColor: '#3b82f6',
+      buttonsStyling: true,
+      customClass: {
+        popup: 'beautiful-error-popup',
+        title: 'beautiful-title',
+        confirmButton: 'beautiful-confirm-btn'
+      },
+      backdrop: 'rgba(15, 23, 42, 0.4)',
+      width: 420,
+      padding: '2rem',
+      showClass: {
+        popup: 'animate__animated animate__fadeInDown animate__faster'
+      },
+      hideClass: {
+        popup: 'animate__animated animate__fadeOutUp animate__faster'
+      }
     });
     return;
   }
@@ -60,15 +106,38 @@ const SignUpLayer = () => {
   if (password.length < 8) {
     Swal.fire({
       icon: 'error',
-      title: '<span style="color:#d33;font-weight:700;">Password Error</span>',
-      html: `<div style="font-size:1.1em;color:#333;">Password must be at least 8 characters</div>`,
-      background: '#fff6f6',
-      iconColor: '#d33',
-      showClass: { popup: 'animate__animated animate__shakeX' },
-      width: 400,
-      backdrop: 'rgba(220,53,69,0.08)',
-      confirmButtonColor: '#d33',
-      confirmButtonText: 'OK'
+      title: 'Oops! Something went wrong',
+      html: `
+        <div style="
+          font-size: 16px; 
+          color: #64748b; 
+          line-height: 1.6;
+          margin-top: 12px;
+        ">
+          Password must be at least 8 characters
+        </div>
+      `,
+      background: '#ffffff',
+      color: '#1e293b',
+      iconColor: '#ef4444',
+      showConfirmButton: true,
+      confirmButtonText: 'Try Again',
+      confirmButtonColor: '#3b82f6',
+      buttonsStyling: true,
+      customClass: {
+        popup: 'beautiful-error-popup',
+        title: 'beautiful-title',
+        confirmButton: 'beautiful-confirm-btn'
+      },
+      backdrop: 'rgba(15, 23, 42, 0.4)',
+      width: 420,
+      padding: '2rem',
+      showClass: {
+        popup: 'animate__animated animate__fadeInDown animate__faster'
+      },
+      hideClass: {
+        popup: 'animate__animated animate__fadeOutUp animate__faster'
+      }
     });
     return;
   }
@@ -76,15 +145,38 @@ const SignUpLayer = () => {
   if (password !== passwordConfirmation) {
     Swal.fire({
       icon: 'error',
-      title: '<span style="color:#d33;font-weight:700;">Password Mismatch</span>',
-      html: `<div style="font-size:1.1em;color:#333;">Passwords do not match</div>`,
-      background: '#fff6f6',
-      iconColor: '#d33',
-      showClass: { popup: 'animate__animated animate__shakeX' },
-      width: 400,
-      backdrop: 'rgba(220,53,69,0.08)',
-      confirmButtonColor: '#d33',
-      confirmButtonText: 'OK'
+      title: 'Oops! Something went wrong',
+      html: `
+        <div style="
+          font-size: 16px; 
+          color: #64748b; 
+          line-height: 1.6;
+          margin-top: 12px;
+        ">
+          Passwords do not match
+        </div>
+      `,
+      background: '#ffffff',
+      color: '#1e293b',
+      iconColor: '#ef4444',
+      showConfirmButton: true,
+      confirmButtonText: 'Try Again',
+      confirmButtonColor: '#3b82f6',
+      buttonsStyling: true,
+      customClass: {
+        popup: 'beautiful-error-popup',
+        title: 'beautiful-title',
+        confirmButton: 'beautiful-confirm-btn'
+      },
+      backdrop: 'rgba(15, 23, 42, 0.4)',
+      width: 420,
+      padding: '2rem',
+      showClass: {
+        popup: 'animate__animated animate__fadeInDown animate__faster'
+      },
+      hideClass: {
+        popup: 'animate__animated animate__fadeOutUp animate__faster'
+      }
     });
     return;
   }
@@ -116,7 +208,9 @@ const SignUpLayer = () => {
           name,
           email
         }));
-        // console.log("💾 Token saved to localStorage:", localStorage.getItem("token"));  it is giving commplete token in console
+
+        // Don't clear application progress - let users continue where they left off
+        // localStorage.removeItem("applicationProgress");
         
         // Send welcome email
         try {
@@ -143,28 +237,61 @@ const SignUpLayer = () => {
           const errorMessages = Object.values(data.errors).join('<br>');
           Swal.fire({
             icon: 'error',
-            title: '<span style="color:#d33;font-weight:700;">Validation Error</span>',
-            html: `<div style="font-size:1.1em;color:#333;">${errorMessages}</div>`,
-            background: '#fff6f6',
-            iconColor: '#d33',
-            showClass: { popup: 'animate__animated animate__shakeX' },
-            width: 400,
-            backdrop: 'rgba(220,53,69,0.08)',
-            confirmButtonColor: '#d33',
-            confirmButtonText: 'OK'
+            title: 'Oops! Something went wrong',
+            html: `
+              <div style="
+                font-size: 16px; 
+                color: #64748b; 
+                line-height: 1.6;
+                margin-top: 12px;
+              ">
+                ${errorMessages}
+              </div>
+            `,
+            background: '#ffffff',
+            color: '#1e293b',
+            iconColor: '#ef4444',
+            showConfirmButton: true,
+            confirmButtonText: 'Try Again',
+            confirmButtonColor: '#3b82f6',
+            buttonsStyling: true,
+            customClass: {
+              popup: 'beautiful-error-popup',
+              title: 'beautiful-title',
+              confirmButton: 'beautiful-confirm-btn'
+            },
+            backdrop: 'rgba(15, 23, 42, 0.4)',
+            width: 420,
+            padding: '2rem',
+            showClass: {
+              popup: 'animate__animated animate__fadeInDown animate__faster'
+            },
+            hideClass: {
+              popup: 'animate__animated animate__fadeOutUp animate__faster'
+            }
           });
         } else {
           Swal.fire({
             icon: 'error',
-            title: '<span style="color:#d33;font-weight:700;">Registration Error</span>',
-            html: `<div style="font-size:1.1em;color:#333;">${data.message || "Registration failed"}</div>`,
-            background: '#fff6f6',
-            iconColor: '#d33',
-            showClass: { popup: 'animate__animated animate__shakeX' },
+            title: 'Access Denied',
+            text: data.message || 'Registration failed. Please check your details.',
+            background: 'linear-gradient(145deg, #ffffff 0%, #f8fafc 100%)',
+            color: '#334155',
+            iconColor: '#f87171',
+            confirmButtonText: 'Retry',
+            confirmButtonColor: '#6366f1',
+            buttonsStyling: true,
+            customClass: {
+              popup: 'beautiful-error-popup',
+              title: 'beautiful-title',
+              confirmButton: 'beautiful-confirm-btn'
+            },
+            backdrop: 'rgba(100, 116, 139, 0.3)',
             width: 400,
-            backdrop: 'rgba(220,53,69,0.08)',
-            confirmButtonColor: '#d33',
-            confirmButtonText: 'OK'
+            padding: '1.5rem',
+            showClass: {
+              popup: 'animate__animated animate__bounceIn animate__faster'
+            }
           });
         }
         // console.log("❌ Sign-up failed, error message:", data.message);
@@ -172,15 +299,28 @@ const SignUpLayer = () => {
     } catch (err) {
       Swal.fire({
         icon: 'error',
-        title: '<span style="color:#d33;font-weight:700;">Network Error</span>',
-        html: `<div style="font-size:1.1em;color:#333;">Unable to connect to the server.<br>Please check your internet connection and try again.</div>`,
-        background: '#fff6f6',
-        iconColor: '#d33',
-        showClass: { popup: 'animate__animated animate__shakeX' },
-        width: 400,
-        backdrop: 'rgba(220,53,69,0.08)',
-        confirmButtonColor: '#d33',
-        confirmButtonText: 'OK'
+        title: 'Connection Issue',
+        html: `
+          <div style="color: #64748b; font-size: 15px; margin-top: 8px;">
+            Unable to reach our servers.<br>
+            <span style="color: #94a3b8; font-size: 14px;">Please check your connection and try again.</span>
+          </div>
+        `,
+        background: '#ffffff',
+        color: '#1e293b',
+        iconColor: '#fb7185',
+        confirmButtonText: 'Retry',
+        confirmButtonColor: '#06b6d4',
+        buttonsStyling: true,
+        customClass: {
+          popup: 'beautiful-error-popup'
+        },
+        backdrop: 'rgba(14, 165, 233, 0.1)',
+        width: 380,
+        padding: '2rem',
+        showClass: {
+          popup: 'animate__animated animate__fadeIn'
+        }
       });
       console.log("🌐 Network error during sign-up:", err);
     } finally {
@@ -296,157 +436,181 @@ const SignUpLayer = () => {
   };
 
   return (
-    <section className='auth d-flex flex-wrap'>
-      <div className='auth-left d-lg-block d-none'>
-        <div className='d-flex align-items-center flex-column h-100 justify-content-center p-0 m-0 w-100'>
-          <img src='/login.jpg' alt='main-website-logo' />
-          <div className='auth-left-overlay'></div>
+    <>
+      <style>
+        {`
+          .beautiful-error-popup {
+            border-radius: 20px !important;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04) !important;
+          }
+          .beautiful-title {
+            font-weight: 700 !important;
+            font-size: 1.5rem !important;
+          }
+          .beautiful-confirm-btn {
+            border-radius: 12px !important;
+            padding: 12px 24px !important;
+            font-weight: 600 !important;
+            transition: all 0.2s ease !important;
+          }
+          .beautiful-confirm-btn:hover {
+            transform: translateY(-2px) !important;
+            box-shadow: 0 10px 20px rgba(99, 102, 241, 0.3) !important;
+          }
+        `}
+      </style>
+      <section className='auth d-flex flex-wrap'>
+        <div className='auth-left d-lg-block d-none'>
+          <div className='d-flex align-items-center flex-column h-100 justify-content-center p-0 m-0 w-100'>
+            <img src='/login.jpg' alt='main-website-logo' />
+            <div className='auth-left-overlay'></div>
+          </div>
         </div>
-      </div>
-      <div className='auth-right py-32 px-24 d-flex flex-column justify-content-center'>
-        <div className='max-w-464-px mx-auto w-100'>
-          <img src='/main-logo.png' alt='main-website-logo' className='auth-logo' />
-          <h4 className='mb-12 auth-title'>Create your Account</h4>
-          <p className='mb-32 text-lg auth-desc'>Join us! Please enter your details to sign up.</p>
-          
-          <form className='auth-form' onSubmit={handleSubmit}>
-            <div className='icon-field mb-16'>
-              <span className='icon top-50 translate-middle-y'>
-                <Icon icon='f7:person' />
-              </span>
-              <input
-                type='text'
-                className='form-control h-56-px bg-neutral-50 radius-12'
-                placeholder='Username'
-                value={name}
-                onChange={e => setName(e.target.value)}
-                required
-              />
-            </div>
+        <div className='auth-right py-32 px-24 d-flex flex-column justify-content-center'>
+          <div className='max-w-464-px mx-auto w-100'>
+            <img src='/main-logo.png' alt='main-website-logo' className='auth-logo' />
+            <h4 className='mb-12 auth-title'>Create your Account</h4>
+            <p className='mb-32 text-lg auth-desc'>Join us! Please enter your details to sign up.</p>
             
-            <div className='icon-field mb-16'>
-              <span className='icon top-50 translate-middle-y'>
-                <Icon icon='mage:email' />
-              </span>
-              <input
-                type='email'
-                className='form-control h-56-px bg-neutral-50 radius-12'
-                placeholder='Email'
-                value={email}
-                onChange={e => setEmail(e.target.value)}
-                required
-              />
-            </div>
-            
-            <div className='mb-20'>
-              <div className='position-relative'>
-                <div className='icon-field'>
-                  <span className='icon top-50 translate-middle-y'>
-                    <Icon icon='solar:lock-password-outline' />
-                  </span>
-                  <input
-                    type={showPassword ? 'text' : 'password'}
-                    className='form-control h-56-px bg-neutral-50 radius-12'
-                    id='your-password'
-                    placeholder='Password'
-                    value={password}
-                    onChange={e => setPassword(e.target.value)}
-                    required
-                  />
-                </div>
-                <span
-                  className={`toggle-password ${showPassword ? 'ri-eye-off-line' : 'ri-eye-line'} cursor-pointer position-absolute end-0 top-50 translate-middle-y me-16 text-secondary-light`}
-                  onClick={() => setShowPassword((prev) => !prev)}
-                  data-toggle='#your-password'
-                />
-              </div>
-              <div className='mt-12'>
+            <form className='auth-form' onSubmit={handleSubmit}>
+              <div className='icon-field mb-16'>
+                <span className='icon top-50 translate-middle-y'>
+                  <Icon icon='f7:person' />
+                </span>
                 <input
-                  type={showPassword ? 'text' : 'password'}
-                  className='form-control h-56-px bg-neutral-50 radius-12 mt-2'
-                  placeholder='Confirm Password'
-                  value={passwordConfirmation}
-                  onChange={e => setPasswordConfirmation(e.target.value)}
+                  type='text'
+                  className='form-control h-56-px bg-neutral-50 radius-12'
+                  placeholder='Username'
+                  value={name}
+                  onChange={e => setName(e.target.value)}
                   required
                 />
               </div>
-              <span className='mt-12 text-sm text-secondary-light'>
-                Your password must have at least 8 characters
-              </span>
-            </div>
-            
-            {/* {error && (
-              <div className='text-danger mb-2'>
-                <strong>Error:</strong> {error}
+              
+              <div className='icon-field mb-16'>
+                <span className='icon top-50 translate-middle-y'>
+                  <Icon icon='mage:email' />
+                </span>
+                <input
+                  type='email'
+                  className='form-control h-56-px bg-neutral-50 radius-12'
+                  placeholder='Email'
+                  value={email}
+                  onChange={e => setEmail(e.target.value)}
+                  required
+                />
               </div>
-            )} */}
-            
-            <div className=''>
-              <div className='d-flex justify-content-between gap-2'>
-                <div className='form-check style-check d-flex align-items-start'>
+              
+              <div className='mb-20'>
+                <div className='position-relative'>
+                  <div className='icon-field'>
+                    <span className='icon top-50 translate-middle-y'>
+                      <Icon icon='solar:lock-password-outline' />
+                    </span>
+                    <input
+                      type={showPassword ? 'text' : 'password'}
+                      className='form-control h-56-px bg-neutral-50 radius-12'
+                      id='your-password'
+                      placeholder='Password'
+                      value={password}
+                      onChange={e => setPassword(e.target.value)}
+                      required
+                    />
+                  </div>
+                  <span
+                    className={`toggle-password ${showPassword ? 'ri-eye-off-line' : 'ri-eye-line'} cursor-pointer position-absolute end-0 top-50 translate-middle-y me-16 text-secondary-light`}
+                    onClick={() => setShowPassword((prev) => !prev)}
+                    data-toggle='#your-password'
+                  />
+                </div>
+                <div className='mt-12'>
                   <input
-                    className='form-check-input border border-neutral-300 mt-4'
-                    type='checkbox'
-                    defaultValue=''
-                    id='condition'
+                    type={showPassword ? 'text' : 'password'}
+                    className='form-control h-56-px bg-neutral-50 radius-12 mt-2'
+                    placeholder='Confirm Password'
+                    value={passwordConfirmation}
+                    onChange={e => setPasswordConfirmation(e.target.value)}
                     required
                   />
-                  <label className='form-check-label text-sm' htmlFor='condition'>
-                    By creating an account means you agree to the
-                    <Link to='#' className='text-primary-600 fw-semibold'>
-                      Terms &amp; Conditions
-                    </Link>{" "}
-                    and our
-                    <Link to='#' className='text-primary-600 fw-semibold'>
-                      Privacy Policy
-                    </Link>
-                  </label>
+                </div>
+                <span className='mt-12 text-sm text-secondary-light'>
+                  Your password must have at least 8 characters
+                </span>
+              </div>
+              
+              {/* {error && (
+                <div className='text-danger mb-2'>
+                  <strong>Error:</strong> {error}
+                </div>
+              )} */}
+              
+              <div className=''>
+                <div className='d-flex justify-content-between gap-2'>
+                  <div className='form-check style-check d-flex align-items-start'>
+                    <input
+                      className='form-check-input border border-neutral-300 mt-4'
+                      type='checkbox'
+                      defaultValue=''
+                      id='condition'
+                      required
+                    />
+                    <label className='form-check-label text-sm' htmlFor='condition'>
+                      By creating an account means you agree to the
+                      <Link to='#' className='text-primary-600 fw-semibold'>
+                        Terms &amp; Conditions
+                      </Link>{" "}
+                      and our
+                      <Link to='#' className='text-primary-600 fw-semibold'>
+                        Privacy Policy
+                      </Link>
+                    </label>
+                  </div>
                 </div>
               </div>
-            </div>
-            
-            <button
-              type='submit'
-              className='btn btn-primary text-sm btn-sm px-12 py-16 w-100 radius-12 mt-3'
-              disabled={loading}
-            >
-              {loading ? 'Signing Up...' : 'Sign Up'}
-            </button>
-            
-            <div className=' center-border-horizontal text-center'>
-              {/* <span className='bg-base z-1 px-4'>Or sign up with</span> */}
-            </div>
-            
-            <div className='mb-3 d-flex align-items-center justify-content-center gap-4 flex-wrap'>
-              {/* <GoogleLogin
-                onSuccess={handleGoogleSuccess}
-                onError={handleGoogleError}
-                useOneTap={false}
-                theme="outline"
-                size="large"
-                text="signin_with"
-                shape="rectangular"
-                logo_alignment="left"
-                width="400"
-              />
               
-              {googleLoading && (
-                <div className="text-center mt-2">
-                  <small className="text-secondary">Signing up with Google...</small>
-                </div>
-              ) */}
+              <button
+                type='submit'
+                className='btn btn-primary text-sm btn-sm px-12 py-16 w-100 radius-12 mt-3'
+                disabled={loading}
+              >
+                {loading ? 'Signing Up...' : 'Sign Up'}
+              </button>
               
-              <div className='text-sm'>
-                <span>Already have an account? </span>
-                <Link to='/sign-in' className='text-primary-600 fw-semibold'>
-                  Sign In
-                </Link>
+              <div className=' center-border-horizontal text-center'>
+                {/* <span className='bg-base z-1 px-4'>Or sign up with</span> */}
               </div>
-            </div>
-          </form>
+              
+              <div className='mb-3 d-flex align-items-center justify-content-center gap-4 flex-wrap'>
+                {/* <GoogleLogin
+                  onSuccess={handleGoogleSuccess}
+                  onError={handleGoogleError}
+                  useOneTap={false}
+                  theme="outline"
+                  size="large"
+                  text="signin_with"
+                  shape="rectangular"
+                  logo_alignment="left"
+                  width="400"
+                />
+                
+                {googleLoading && (
+                  <div className="text-center mt-2">
+                    <small className="text-secondary">Signing up with Google...</small>
+                  </div>
+                ) */}
+                
+                <div className='text-sm'>
+                  <span>Already have an account? </span>
+                  <Link to='/sign-in' className='text-primary-600 fw-semibold'>
+                    Sign In
+                  </Link>
+                </div>
+              </div>
+            </form>
+          </div>
         </div>
-      </div>
-    </section>
+      </section>
+    </>
   );
 };
 
