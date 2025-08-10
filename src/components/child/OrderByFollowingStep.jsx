@@ -109,7 +109,9 @@ const OrderByFollowingStep = () => {
       : null;
 
     // Load saved progress from localStorage - make it user-specific
-    const progressKey = storedEmail ? `applicationProgress_${storedEmail}` : "applicationProgress";
+    const progressKey = storedEmail
+      ? `applicationProgress_${storedEmail}`
+      : "applicationProgress";
     const savedProgress = localStorage.getItem(progressKey);
     if (savedProgress) {
       try {
@@ -153,7 +155,9 @@ const OrderByFollowingStep = () => {
     const storedEmail = localStorage.getItem("user")
       ? JSON.parse(localStorage.getItem("user")).email
       : null;
-    const progressKey = storedEmail ? `applicationProgress_${storedEmail}` : "applicationProgress";
+    const progressKey = storedEmail
+      ? `applicationProgress_${storedEmail}`
+      : "applicationProgress";
     localStorage.setItem(progressKey, JSON.stringify(progress));
   }, [form, completedSteps, currentStep, applicationId]);
 
@@ -291,7 +295,7 @@ const OrderByFollowingStep = () => {
 
       showClass: {
         popup: "animate__animated animate__bounceIn animate__faster",
-      }
+      },
     });
   };
 
@@ -410,150 +414,205 @@ const OrderByFollowingStep = () => {
       }
     }
 
-  if (step === 3) {
-    if (!form.cdlStatus) {
-      showValidationError('CDL Status Required', 'Please select your CDL status.');
-      return false;
+    if (step === 3) {
+      if (!form.cdlStatus) {
+        showValidationError(
+          "CDL Status Required",
+          "Please select your CDL status."
+        );
+        return false;
+      }
+      if (!form.cdlSuspended) {
+        showValidationError(
+          "CDL Suspension Info Required",
+          "Please indicate if your CDL was ever suspended or revoked."
+        );
+        return false;
+      }
+      if (
+        !form.yearsExperience ||
+        isNaN(form.yearsExperience) ||
+        Number(form.yearsExperience) < 0
+      ) {
+        showValidationError(
+          "Years of Experience Required",
+          "Please enter your years in trucking/dump hauling business (numbers only)."
+        );
+        return false;
+      }
+      if (!form.materialsHauled || form.materialsHauled.length === 0) {
+        showValidationError(
+          "Materials Hauled Required",
+          "Please select the types of materials you have hauled."
+        );
+        return false;
+      }
+      if (!form.govContracts) {
+        showValidationError(
+          "Government Contracts Info Required",
+          "Please indicate if you have worked on government or DOT contracts."
+        );
+        return false;
+      }
     }
-    if (!form.cdlSuspended) {
-      showValidationError('CDL Suspension Info Required', 'Please indicate if your CDL was ever suspended or revoked.');
-      return false;
-    }
-    if (!form.yearsExperience || isNaN(form.yearsExperience) || Number(form.yearsExperience) < 0) {
-      showValidationError('Years of Experience Required', 'Please enter your years in trucking/dump hauling business (numbers only).');
-      return false;
-    }
-    if (!form.materialsHauled || form.materialsHauled.length === 0) {
-      showValidationError('Materials Hauled Required', 'Please select the types of materials you have hauled.');
-      return false;
-    }
-    if (!form.govContracts) {
-      showValidationError('Government Contracts Info Required', 'Please indicate if you have worked on government or DOT contracts.');
-      return false;
-    }
-  }
 
-  if (step === 4) {
-    if (!form.numEmployees || isNaN(form.numEmployees) || Number(form.numEmployees) < 1) {
-      showValidationError('Number of Employees Required', 'Please enter the number of employees/drivers (including yourself, numbers only).');
-      return false;
+    if (step === 4) {
+      if (
+        !form.numEmployees ||
+        isNaN(form.numEmployees) ||
+        Number(form.numEmployees) < 1
+      ) {
+        showValidationError(
+          "Number of Employees Required",
+          "Please enter the number of employees/drivers (including yourself, numbers only)."
+        );
+        return false;
+      }
+      if (!form.workRadius) {
+        showValidationError(
+          "Work Radius Required",
+          "Please select your preferred work radius."
+        );
+        return false;
+      }
+      if (!form.shiftWillingness) {
+        showValidationError(
+          "Shift Flexibility Required",
+          "Please indicate your willingness to work 10–12 hour shifts."
+        );
+        return false;
+      }
+      if (!form.regions) {
+        showValidationError(
+          "Preferred States/Regions Required",
+          "Please list the regions or states you are willing to work in."
+        );
+        return false;
+      }
+      if (!form.startDate) {
+        showValidationError(
+          "Start Availability Required",
+          "Please select when you would be ready to start."
+        );
+        return false;
+      }
+      if (!form.weeklyAvailability) {
+        showValidationError(
+          "Weekly Availability Required",
+          "Please select your expected weekly availability."
+        );
+        return false;
+      }
     }
-    if (!form.workRadius) {
-      showValidationError('Work Radius Required', 'Please select your preferred work radius.');
-      return false;
-    }
-    if (!form.shiftWillingness) {
-      showValidationError('Shift Flexibility Required', 'Please indicate your willingness to work 10–12 hour shifts.');
-      return false;
-    }
-    if (!form.regions) {
-      showValidationError('Preferred States/Regions Required', 'Please list the regions or states you are willing to work in.');
-      return false;
-    }
-    if (!form.startDate) {
-      showValidationError('Start Availability Required', 'Please select when you would be ready to start.');
-      return false;
-    }
-    if (!form.weeklyAvailability) {
-      showValidationError('Weekly Availability Required', 'Please select your expected weekly availability.');
-      return false;
-    }
-  }
 
-  if (step === 5) {
-    if (!form.insuranceCoverage) {
-      showValidationError('Insurance Coverage Required', 'Please select your current insurance coverage.');
-      return false;
+    if (step === 5) {
+      if (!form.insuranceCoverage) {
+        showValidationError(
+          "Insurance Coverage Required",
+          "Please select your current insurance coverage."
+        );
+        return false;
+      }
+      if (!form.cargoCoverage) {
+        showValidationError(
+          "Cargo Coverage Required",
+          "Please indicate if you also have cargo coverage."
+        );
+        return false;
+      }
+      if (!form.insuranceExpiration) {
+        showValidationError(
+          "Insurance Expiry Required",
+          "Please enter your insurance policy expiration date."
+        );
+        return false;
+      }
+      if (!form.workmansComp) {
+        showValidationError(
+          "Workman's Comp Required",
+          "Please indicate if you carry Workman's Comp or Occupational Accident Policy."
+        );
+        return false;
+      }
+      if (!form.addTruckStaffer) {
+        showValidationError(
+          "Certificate Holder Required",
+          "Please indicate if you are willing to add TruckStaffer as Certificate Holder."
+        );
+        return false;
+      }
     }
-    if (!form.cargoCoverage) {
-      showValidationError('Cargo Coverage Required', 'Please indicate if you also have cargo coverage.');
-      return false;
-    }
-    if (!form.insuranceExpiration) {
-      showValidationError('Insurance Expiry Required', 'Please enter your insurance policy expiration date.');
-      return false;
-    }
-    if (!form.workmansComp) {
-      showValidationError('Workman\'s Comp Required', 'Please indicate if you carry Workman\'s Comp or Occupational Accident Policy.');
-      return false;
-    }
-    if (!form.addTruckStaffer) {
-      showValidationError('Certificate Holder Required', 'Please indicate if you are willing to add TruckStaffer as Certificate Holder.');
-      return false;
-    }
-  }
 
-  if (step === 6) {
-    if (!form.felony) {
-      showValidationError(
-        'Felony Conviction Status Required',
-        'Please indicate whether you have ever been convicted of a felony or major traffic violation.'
-      );
-      return false;
+    if (step === 6) {
+      if (!form.felony) {
+        showValidationError(
+          "Felony Conviction Status Required",
+          "Please indicate whether you have ever been convicted of a felony or major traffic violation."
+        );
+        return false;
+      }
+      if (!form.drugTesting) {
+        showValidationError(
+          "Drug Testing Willingness Required",
+          "Please indicate whether you are willing to undergo drug testing if required."
+        );
+        return false;
+      }
+      if (!form.enrolledTesting) {
+        showValidationError(
+          "Random Testing Enrollment Required",
+          "Please indicate if you are enrolled in a random drug/alcohol testing program."
+        );
+        return false;
+      }
+      if (!form.safetyViolations) {
+        showValidationError(
+          "Safety Violations Info Required",
+          "Please indicate if you have any current safety violations or outstanding compliance issues."
+        );
+        return false;
+      }
+      if (!form.pendingLawsuits) {
+        showValidationError(
+          "Legal Issues Info Required",
+          "Please indicate if you have any pending lawsuits, liens, or judgments."
+        );
+        return false;
+      }
     }
-    if (!form.drugTesting) {
-      showValidationError(
-        'Drug Testing Willingness Required',
-        'Please indicate whether you are willing to undergo drug testing if required.'
-      );
-      return false;
-    }
-    if (!form.enrolledTesting) {
-      showValidationError(
-        'Random Testing Enrollment Required',
-        'Please indicate if you are enrolled in a random drug/alcohol testing program.'
-      );
-      return false;
-    }
-    if (!form.safetyViolations) {
-      showValidationError(
-        'Safety Violations Info Required',
-        'Please indicate if you have any current safety violations or outstanding compliance issues.'
-      );
-      return false;
-    }
-    if (!form.pendingLawsuits) {
-      showValidationError(
-        'Legal Issues Info Required',
-        'Please indicate if you have any pending lawsuits, liens, or judgments.'
-      );
-      return false;
-    }
-  }
 
-  if (step === 7) {
-    if (!form.currentContracts) {
-      showValidationError(
-        'Current Contract Status Required',
-        'Please indicate your current contract status with another project/company.'
-      );
-      return false;
+    if (step === 7) {
+      if (!form.currentContracts) {
+        showValidationError(
+          "Current Contract Status Required",
+          "Please indicate your current contract status with another project/company."
+        );
+        return false;
+      }
+      if (!form.dispatchServices) {
+        showValidationError(
+          "Dispatch Services Info Required",
+          "Please indicate if you currently work with dispatch services or brokers."
+        );
+        return false;
+      }
+      if (!form.telematics) {
+        showValidationError(
+          "Telematics/GPS Info Required",
+          "Please indicate if you use telematics or GPS tracking."
+        );
+        return false;
+      }
+      if (!form.maintenanceInterest) {
+        showValidationError(
+          "Maintenance Discount Interest Required",
+          "Please indicate if you are interested in priority maintenance discounts."
+        );
+        return false;
+      }
     }
-    if (!form.dispatchServices) {
-      showValidationError(
-        'Dispatch Services Info Required',
-        'Please indicate if you currently work with dispatch services or brokers.'
-      );
-      return false;
-    }
-    if (!form.telematics) {
-      showValidationError(
-        'Telematics/GPS Info Required',
-        'Please indicate if you use telematics or GPS tracking.'
-      );
-      return false;
-    }
-    if (!form.maintenanceInterest) {
-      showValidationError(
-        'Maintenance Discount Interest Required',
-        'Please indicate if you are interested in priority maintenance discounts.'
-      );
-      return false;
-    }
-  }
     return true;
-};
-
+  };
 
   // Check for missing important information at the end
   const getMissingImportantFields = () => {
@@ -747,6 +806,17 @@ const OrderByFollowingStep = () => {
           if (applicationId) {
             setApplicationId(applicationId);
             console.log(`Application ID received: ${applicationId}`);
+
+            // ADD THIS: Save to localStorage so ApplicationSummary can access it
+            const applicationProgress = {
+              applicationId: applicationId,
+              currentStep: step,
+              timestamp: new Date().toISOString(),
+            };
+            localStorage.setItem(
+              "applicationProgress",
+              JSON.stringify(applicationProgress)
+            );
           } else {
             console.warn(
               "Step 1 successful but no application_id found in response:",
@@ -774,19 +844,37 @@ const OrderByFollowingStep = () => {
           errorMsg = "Please fix the following errors:";
           errorMsg += "<ul style='text-align:left; margin-top: 10px;'>";
           Object.entries(data.errors).forEach(([field, msgs]) => {
-            const fieldName = field.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
-            const message = Array.isArray(msgs) ? msgs.join(', ') : msgs;
+            const fieldName = field
+              .replace(/_/g, " ")
+              .replace(/\b\w/g, (l) => l.toUpperCase());
+            const message = Array.isArray(msgs) ? msgs.join(", ") : msgs;
             errorMsg += `<li><strong>${fieldName}:</strong> ${message}</li>`;
           });
           errorMsg += "</ul>";
         }
-        // Swal.fire({
-        //   icon: "error",
-        //   title: "Error",
-        //   html: errorMsg,
-        //   confirmButtonColor: "#3085d6",
-        //   confirmButtonText: "OK",
-        // });
+
+        Swal.fire({
+          icon: "error",
+          title: "Error",
+          html: errorMsg,
+          background: "linear-gradient(145deg, #ffffff 0%, #f8fafc 100%)",
+          color: "#334155",
+          iconColor: "#f87171",
+          confirmButtonText: "OK",
+          confirmButtonColor: "#6366f1",
+          buttonsStyling: true,
+          customClass: {
+            popup: "beautiful-error-popup",
+            title: "beautiful-title",
+            confirmButton: "beautiful-confirm-btn",
+          },
+          backdrop: "rgba(100, 116, 139, 0.3)",
+          width: 400,
+          padding: "1.5rem",
+          showClass: {
+            popup: "animate__animated animate__bounceIn animate__faster",
+          },
+        });
         // setError(errorMsg);
         // return true;
       }
@@ -1061,7 +1149,9 @@ const OrderByFollowingStep = () => {
                         />
                       </div>
                       <div className="col-sm-6">
-                        <label className="form-label">Business Structure*</label>
+                        <label className="form-label">
+                          Business Structure*
+                        </label>
                         <select
                           className="form-control"
                           name="businessStructure"
@@ -1093,13 +1183,27 @@ const OrderByFollowingStep = () => {
                         <label className="form-label">
                           How did you hear about TruckStaffer?
                         </label>
-                        <input
-                          type="text"
+                        <select
                           className="form-control"
                           name="referralSource"
                           value={form.referralSource}
                           onChange={handleChange}
-                        />
+                        >
+                          <option value="">Select</option>
+                          <option value="Google Search">Google Search</option>
+                          <option value="Social Media">Social Media</option>
+                          <option value="Friend or Family Member">
+                            Friend or Family Member
+                          </option>
+                          <option value="Truck Stop or Terminal">
+                            Truck Stop or Terminal
+                          </option>
+                          <option value="Industry Event or Conference">
+                            Industry Event or Conference
+                          </option>
+                          <option value="Online Ad">Online Ad</option>
+                          <option value="Other">Other</option>
+                        </select>
                       </div>
                     </div>
                     <div className="form-group text-end mt-4">
@@ -1616,7 +1720,7 @@ const OrderByFollowingStep = () => {
                           required
                         >
                           <option value="">Select</option>
-                          <option value="$1M Liability">
+                          <option value="Yes – $1M Liability">
                             Yes – $1M Liability
                           </option>
                           <option value="Less than $1M">Less than $1M</option>

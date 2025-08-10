@@ -29,9 +29,9 @@ const ApplicationSummary = () => {
         setShowSummary(true);
         
         // If we have an application ID, try to finalize the application
-        if (appId) {
-          finalizeApplication(appId);
-        }
+        // if (appId) { 
+        //   finalizeApplication(appId);
+        // }
       } catch (e) {
         console.error("Error loading application ID:", e);
         // Still show summary even if there's an error loading progress
