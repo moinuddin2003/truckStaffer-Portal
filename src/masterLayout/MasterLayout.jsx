@@ -164,7 +164,7 @@ const MasterLayout = ({ children }) => {
                 to='/'
                 className={(navData) => (navData.isActive ? "active-page" : "")}
               >
-                <Icon icon='mage:email' className='menu-icon' />
+                <Icon icon='radix-icons:dashboard' className='menu-icon' />
                 <span>Dashboard</span>
               </NavLink>
             </li>
@@ -173,7 +173,7 @@ const MasterLayout = ({ children }) => {
                 to='/application'
                 className={(navData) => (navData.isActive ? "active-page" : "")}
               >
-                <Icon icon='mage:email' className='menu-icon' />
+                <Icon icon='memory:application' className='menu-icon' />
                 <span>Application</span>
               </NavLink>
             </li>
@@ -182,7 +182,7 @@ const MasterLayout = ({ children }) => {
               to='/calendar'
               className={(navData) => (navData.isActive ? "active-page" : "")}
               >
-                <Icon icon='mage:email' className='menu-icon' />
+                <Icon icon='mi:calendar' className='menu-icon' />
                 <span>Calendar</span>
               </NavLink>
             </li>
@@ -191,7 +191,7 @@ const MasterLayout = ({ children }) => {
                 to='/my-profile'
                 className={(navData) => (navData.isActive ? "active-page" : "")}
               >
-                <Icon icon='mage:email' className='menu-icon' />
+                <Icon icon='gg:profile' className='menu-icon' />
                 <span>My Profile</span>
               </NavLink>
             </li>
