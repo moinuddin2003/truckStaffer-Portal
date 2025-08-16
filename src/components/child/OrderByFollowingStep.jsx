@@ -2,6 +2,9 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
 
+// Use the orange primary color from CSS
+const PRIMARY_COLOR = '#F0831C'; // --primary-600
+
 const initialForm = {
   fullName: "",
   companyName: "",
@@ -975,15 +978,15 @@ const OrderByFollowingStep = () => {
                 {/* Enhanced step indicator */}
                 <div className="mb-6">
                   <div className="d-flex align-items-center justify-content-between mb-3">
-                    <h6 className="text-lg fw-semibold text-primary-light mb-0">
+                    <h6 className="text-lg fw-semibold mb-0" style={{ color: PRIMARY_COLOR }}>
                       Step {Math.min(currentStep, 7)} of 7
                     </h6>
                     <div className="d-flex align-items-center gap-2">
-                      <span className="text-sm text-success-600 fw-medium">
+                      <span className="text-sm fw-medium" style={{ color: PRIMARY_COLOR }}>
                         {completedSteps.length} completed
                       </span>
-                      <div className="bg-success-100 px-3 py-2 rounded-pill">
-                        <span className="text-xs text-success-700 fw-bold">
+                      <div className="px-3 py-2 rounded-pill" style={{ backgroundColor: `${PRIMARY_COLOR}20` }}>
+                        <span className="text-xs fw-bold" style={{ color: PRIMARY_COLOR }}>
                           {Math.round((completedSteps.length / 7) * 100)}%
                         </span>
                       </div>
@@ -993,9 +996,12 @@ const OrderByFollowingStep = () => {
                   {/* Progress bar */}
                   <div className="progress mb-3" style={{ height: "8px" }}>
                     <div
-                      className="progress-bar bg-success"
+                      className="progress-bar"
                       role="progressbar"
-                      style={{ width: `${(completedSteps.length / 7) * 100}%` }}
+                      style={{ 
+                        width: `${(completedSteps.length / 7) * 100}%`,
+                        backgroundColor: PRIMARY_COLOR
+                      }}
                       aria-valuenow={completedSteps.length}
                       aria-valuemin="0"
                       aria-valuemax="7"
@@ -1015,23 +1021,24 @@ const OrderByFollowingStep = () => {
                     ].map((step, index) => (
                       <div key={step.num} className="text-center flex-fill">
                         <div
-                          className={`d-inline-flex align-items-center justify-content-center mb-2 ${
-                            currentStep === step.num
-                              ? "text-primary-600"
+                          className="d-inline-flex align-items-center justify-content-center mb-2"
+                          style={{
+                            color: currentStep === step.num
+                              ? PRIMARY_COLOR
                               : completedSteps.includes(step.num)
-                              ? "text-success-600"
-                              : "text-neutral-400"
-                          }`}
+                              ? PRIMARY_COLOR
+                              : "#9ca3af"
+                          }}
                         >
                           <div
-                            className={`rounded-circle d-flex align-items-center justify-content-center me-2 ${
-                              currentStep === step.num
-                                ? "bg-primary-600 text-white"
-                                : completedSteps.includes(step.num)
-                                ? "bg-success-600 text-white"
-                                : "bg-neutral-200 text-neutral-500"
-                            }`}
+                            className="rounded-circle d-flex align-items-center justify-content-center me-2"
                             style={{
+                              backgroundColor: currentStep === step.num
+                                ? PRIMARY_COLOR
+                                : completedSteps.includes(step.num)
+                                ? PRIMARY_COLOR
+                                : "#e5e7eb",
+                              color: currentStep === step.num || completedSteps.includes(step.num) ? "white" : "#6b7280",
                               width: "24px",
                               height: "24px",
                               fontSize: "12px",
@@ -1223,7 +1230,8 @@ const OrderByFollowingStep = () => {
                     <div className="form-group text-end mt-4">
                       <button
                         type="button"
-                        className="btn btn-primary-600 px-32"
+                        className="btn px-32"
+                        style={{ backgroundColor: PRIMARY_COLOR, borderColor: PRIMARY_COLOR, color: 'white' }}
                         onClick={nextStep}
                         disabled={loading}
                       >
@@ -1302,7 +1310,8 @@ const OrderByFollowingStep = () => {
                           />
                           <button
                             type="button"
-                            className="btn btn-sm btn-primary"
+                            className="btn btn-sm"
+                            style={{ backgroundColor: PRIMARY_COLOR, borderColor: PRIMARY_COLOR, color: 'white' }}
                             onClick={handleAddVin}
                             disabled={!form.vin.trim()}
                           >
@@ -1318,7 +1327,8 @@ const OrderByFollowingStep = () => {
                               {form.vins.map((vin, index) => (
                                 <div
                                   key={index}
-                                  className="badge bg-primary d-flex align-items-center gap-2"
+                                  className="badge d-flex align-items-center gap-2"
+                                  style={{ backgroundColor: PRIMARY_COLOR, color: 'white' }}
                                 >
                                   {vin}
                                   <button
@@ -2096,44 +2106,45 @@ const OrderByFollowingStep = () => {
                       className="list-group-item d-flex justify-content-between align-items-center"
                     >
                       <span className="text-danger">⚠️ {field}</span>
-                      <button
-                        type="button"
-                        className="btn btn-sm btn-outline-primary"
-                        onClick={() => {
-                          setShowFinalValidation(false);
-                          // Navigate to the appropriate step based on the field
-                          if (
-                            [
-                              "Company Name",
-                              "Business EIN",
-                              "MC/DOT Number",
-                            ].includes(field)
-                          ) {
-                            setCurrentStep(1);
-                          } else if (
-                            [
-                              "Year/Make/Model",
-                              "Truck VIN Number(s)",
-                              "Truck GVWR",
-                            ].includes(field)
-                          ) {
-                            setCurrentStep(2);
-                          } else if (
-                            ["CDL Upload", "DOT Medical Card"].includes(field)
-                          ) {
-                            setCurrentStep(3);
-                          } else if (
-                            [
-                              "Certificate of Insurance",
-                              "Business Documents",
-                            ].includes(field)
-                          ) {
-                            setCurrentStep(5);
-                          }
-                        }}
-                      >
-                        Fill Now
-                      </button>
+                                              <button
+                          type="button"
+                          className="btn btn-sm btn-outline"
+                          style={{ borderColor: PRIMARY_COLOR, color: PRIMARY_COLOR }}
+                          onClick={() => {
+                            setShowFinalValidation(false);
+                            // Navigate to the appropriate step based on the field
+                            if (
+                              [
+                                "Company Name",
+                                "Business EIN",
+                                "MC/DOT Number",
+                              ].includes(field)
+                            ) {
+                              setCurrentStep(1);
+                            } else if (
+                              [
+                                "Year/Make/Model",
+                                "Truck VIN Number(s)",
+                                "Truck GVWR",
+                              ].includes(field)
+                            ) {
+                              setCurrentStep(3);
+                            } else if (
+                              ["CDL Upload", "DOT Medical Card"].includes(field)
+                            ) {
+                              setCurrentStep(3);
+                            } else if (
+                              [
+                                "Certificate of Insurance",
+                                "Business Documents",
+                              ].includes(field)
+                            ) {
+                              setCurrentStep(5);
+                            }
+                          }}
+                        >
+                          Fill Now
+                        </button>
                     </li>
                   ))}
                 </ul>
@@ -2154,7 +2165,8 @@ const OrderByFollowingStep = () => {
                 </button>
                 <button
                   type="button"
-                  className="btn btn-primary"
+                  className="btn"
+                  style={{ backgroundColor: PRIMARY_COLOR, borderColor: PRIMARY_COLOR, color: 'white' }}
                   onClick={() => {
                     setShowFinalValidation(false);
                     navigate("/application-summary");

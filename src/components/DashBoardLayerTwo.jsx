@@ -2,6 +2,9 @@ import React, { useState, useEffect } from 'react'
 import { Icon } from '@iconify/react/dist/iconify.js'
 import { useNavigate } from 'react-router-dom'
 
+// Use the orange primary color from CSS
+const PRIMARY_COLOR = '#F0831C'; // --primary-600
+
 const DashBoardLayerTwo = () => {
   const [dashboardData, setDashboardData] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -87,13 +90,13 @@ const DashBoardLayerTwo = () => {
   const getStatusColor = (status) => {
     switch (status) {
       case 'completed':
-        return 'success';
+        return PRIMARY_COLOR;
       case 'in_progress':
-        return 'primary';
+        return PRIMARY_COLOR;
       case 'not_started':
-        return 'secondary';
+        return '#888'; // A neutral color for not started
       default:
-        return 'secondary';
+        return '#888';
     }
   };
 
@@ -141,7 +144,7 @@ const DashBoardLayerTwo = () => {
   if (loading) {
     return (
       <div className="d-flex justify-content-center align-items-center" style={{ height: '400px' }}>
-        <div className="spinner-border text-primary" role="status">
+        <div className="spinner-border" style={{ color: PRIMARY_COLOR }} role="status">
           <span className="visually-hidden">Loading...</span>
         </div>
       </div>
@@ -188,7 +191,7 @@ const DashBoardLayerTwo = () => {
                 <p className="text-secondary-light mb-0">
                   Track your application progress and stay updated with important messages.
                   {dashboardData.summary && (
-                    <span className="ms-2 text-primary fw-semibold">
+                    <span className="ms-2 fw-semibold" style={{ color: PRIMARY_COLOR }}>
                       {dashboardData.summary.completed_steps} of {dashboardData.summary.total_steps} steps completed
                     </span>
                   )}
@@ -196,7 +199,8 @@ const DashBoardLayerTwo = () => {
               </div>
               <div className="text-end">
                 <button 
-                  className="btn btn-primary"
+                  className="btn"
+                  style={{ backgroundColor: PRIMARY_COLOR, borderColor: PRIMARY_COLOR, color: 'white' }}
                   onClick={() => navigate('/application')}
                 >
                   {dashboardData.summary?.next_step === 'finalize' ? 'Finalize Application' : 'Continue Application'}
@@ -224,12 +228,15 @@ const DashBoardLayerTwo = () => {
               <div className="mb-4">
                 <div className="d-flex justify-content-between align-items-center mb-2">
                   <span className="fw-semibold">Overall Progress</span>
-                  <span className="text-primary fw-bold">{dashboardData.summary.percent}%</span>
+                  <span className="fw-bold" style={{ color: PRIMARY_COLOR }}>{dashboardData.summary.percent}%</span>
                 </div>
                 <div className="progress" style={{ height: '10px' }}>
                   <div 
-                    className="progress-bar bg-primary" 
-                    style={{ width: `${dashboardData.summary.percent}%` }}
+                    className="progress-bar" 
+                    style={{ 
+                      width: `${dashboardData.summary.percent}%`,
+                      backgroundColor: PRIMARY_COLOR
+                    }}
                     role="progressbar"
                     aria-valuenow={dashboardData.summary.percent}
                     aria-valuemin="0"
@@ -247,23 +254,21 @@ const DashBoardLayerTwo = () => {
                 
                 return (
                   <div key={stepKey} className="col-md-6 mb-3">
-                    <div className={`d-flex align-items-center p-3 rounded border ${
-                      isCurrentStep ? 'border-primary bg-primary-light' : 
-                      status === 'completed' ? 'border-success bg-success-light' : 
-                      'border-light bg-light'
-                    }`}>
-                      <div className={`w-32-px h-32-px rounded-circle d-flex align-items-center justify-content-center me-3 ${
-                        status === 'completed' ? 'bg-success text-white' : 
-                        status === 'in_progress' ? 'bg-primary text-white' : 
-                        'bg-secondary text-white'
-                      }`}>
+                    <div className="d-flex align-items-center p-3 rounded border" style={{
+                      borderColor: isCurrentStep ? PRIMARY_COLOR : status === 'completed' ? PRIMARY_COLOR : '#dee2e6',
+                      backgroundColor: isCurrentStep ? `${PRIMARY_COLOR}20` : status === 'completed' ? `${PRIMARY_COLOR}10` : '#f8f9fa'
+                    }}>
+                      <div className="w-32-px h-32-px rounded-circle d-flex align-items-center justify-content-center me-3" style={{
+                        backgroundColor: status === 'completed' || status === 'in_progress' ? PRIMARY_COLOR : '#6c757d',
+                        color: 'white'
+                      }}>
                         {getStatusIcon(status)}
                       </div>
                       <div className="flex-grow-1">
                         <div className="fw-semibold text-sm">
                           {getStepName(stepKey)}
                           {isCurrentStep && (
-                            <span className="badge bg-primary ms-2">Current</span>
+                            <span className="badge ms-2" style={{ backgroundColor: PRIMARY_COLOR, color: 'white' }}>Current</span>
                           )}
                         </div>
                         <div className="text-secondary-light text-xs">
@@ -292,7 +297,8 @@ const DashBoardLayerTwo = () => {
             <div className="d-flex justify-content-between align-items-center">
               <h6 className="text-lg fw-semibold mb-0">Messages & Updates</h6>
               <button 
-                className="btn btn-sm btn-outline-primary"
+                className="btn btn-sm btn-outline"
+                style={{ borderColor: PRIMARY_COLOR, color: PRIMARY_COLOR }}
                 onClick={loadDashboardData}
                 title="Refresh messages"
               >
@@ -306,7 +312,7 @@ const DashBoardLayerTwo = () => {
                 {dashboardData.messages.slice(0, 5).map((message) => (
                   <div key={message.id} className="border-bottom pb-3">
                     <div className="d-flex align-items-start gap-3">
-                      <div className="w-40-px h-40-px bg-primary rounded-circle d-flex align-items-center justify-content-center flex-shrink-0">
+                      <div className="w-40-px h-40-px rounded-circle d-flex align-items-center justify-content-center flex-shrink-0" style={{ backgroundColor: PRIMARY_COLOR }}>
                         <Icon icon="ri:message-3-line" className="text-white" />
                       </div>
                       <div className="flex-grow-1">
