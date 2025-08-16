@@ -177,6 +177,15 @@ const MasterLayout = ({ children }) => {
                 <span>Application</span>
               </NavLink>
             </li>
+            <li>
+              <NavLink
+              to='/calendar'
+              className={(navData) => (navData.isActive ? "active-page" : "")}
+              >
+                <Icon icon='mage:email' className='menu-icon' />
+                <span>Calendar</span>
+              </NavLink>
+            </li>
                <li>
               <NavLink
                 to='/my-profile'

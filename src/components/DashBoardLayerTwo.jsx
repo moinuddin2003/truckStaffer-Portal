@@ -193,7 +193,7 @@ const DashBoardLayerTwo = () => {
           </div>
           <div className="card-body p-24">
             <div className="row g-3">
-              <div className="col-md-3">
+              <div className="col-md-4">
                 <button 
                   className="btn btn-outline-primary w-100 p-3"
                   onClick={() => navigate('/application')}
@@ -203,7 +203,7 @@ const DashBoardLayerTwo = () => {
                   <div className="text-secondary-light text-xs">Resume where you left off</div>
                 </button>
               </div>
-              <div className="col-md-3">
+              {/* <div className="col-md-3">
                 <button 
                   className="btn btn-outline-success w-100 p-3"
                   onClick={() => navigate('/application-summary')}
@@ -212,8 +212,8 @@ const DashBoardLayerTwo = () => {
                   <div className="fw-semibold">View Summary</div>
                   <div className="text-secondary-light text-xs">Review your application</div>
                 </button>
-              </div>
-              <div className="col-md-3">
+              </div> */}
+              <div className="col-md-4">
                 <button 
                   className="btn btn-outline-info w-100 p-3"
                   onClick={() => navigate('/my-profile')}
@@ -223,7 +223,7 @@ const DashBoardLayerTwo = () => {
                   <div className="text-secondary-light text-xs">Manage your information</div>
                 </button>
               </div>
-              <div className="col-md-3">
+              <div className="col-md-4">
                 <button 
                   className="btn btn-outline-warning w-100 p-3"
                   onClick={() => {

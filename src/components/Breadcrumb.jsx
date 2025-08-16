@@ -18,8 +18,8 @@ const Breadcrumb = ({ title }) => {
             Dashboard
           </Link>
         </li>
-        <li> - </li>
-        <li className='fw-medium'>{title}</li>
+        {/* <li> - </li>
+        <li className='fw-medium'>{title}</li> */}
       </ul>
     </div>
   );
