@@ -807,7 +807,7 @@ const OrderByFollowingStep = () => {
             setApplicationId(applicationId);
             console.log(`Application ID received: ${applicationId}`);
 
-            // ADD THIS: Save to localStorage so ApplicationSummary can access it
+            // ADD THIS: Save to localStorage so ApplicationSummary and Dashboard can access it
             const applicationProgress = {
               applicationId: applicationId,
               currentStep: step,
@@ -817,6 +817,20 @@ const OrderByFollowingStep = () => {
               "applicationProgress",
               JSON.stringify(applicationProgress)
             );
+            
+            // Also save to user-specific key for dashboard access
+            const storedEmail = localStorage.getItem("user")
+              ? JSON.parse(localStorage.getItem("user")).email
+              : null;
+            if (storedEmail) {
+              const userProgressKey = `applicationProgress_${storedEmail}`;
+              const userProgress = localStorage.getItem(userProgressKey);
+              if (userProgress) {
+                const parsedProgress = JSON.parse(userProgress);
+                parsedProgress.applicationId = applicationId;
+                localStorage.setItem(userProgressKey, JSON.stringify(parsedProgress));
+              }
+            }
           } else {
             console.warn(
               "Step 1 successful but no application_id found in response:",
