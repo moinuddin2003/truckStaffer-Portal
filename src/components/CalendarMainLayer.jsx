@@ -173,7 +173,7 @@ const CalendarMainLayer = () => {
                                                     </p>
                                                 )}
                                     </div>
-                                    <div className="dropdown">
+                                    {/* <div className="dropdown">
                                         <button
                                             type="button"
                                             data-bs-toggle="dropdown"
@@ -228,7 +228,7 @@ const CalendarMainLayer = () => {
                                                 </button>
                                             </li>
                                         </ul>
-                                    </div>
+                                    </div> */}
                                 </div>
                                     ))
                                 )}
