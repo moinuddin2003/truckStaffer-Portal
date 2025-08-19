@@ -1,9 +1,9 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
 
 // Use the orange primary color from CSS
-const PRIMARY_COLOR = '#F0831C'; // --primary-600
+const PRIMARY_COLOR = "#F0831C"; // --primary-600
 
 const initialForm = {
   fullName: "",
@@ -86,65 +86,186 @@ const OrderByFollowingStep = () => {
     }
   }, [currentStep, navigate]);
 
-  useEffect(() => {
+  // Helper: fetch application data from backend
+  const fetchApplicationData = useCallback(async () => {
     const token = localStorage.getItem("token");
     if (!token) {
       navigate("/sign-in");
       return;
     }
-    // Optionally: check token expiration if your token is a JWT
+
+    // ALWAYS get user email from localStorage (login data)
+    const storedUser = localStorage.getItem("user");
+    const userEmail = storedUser ? JSON.parse(storedUser).email : null;
+
     try {
-      const payload = JSON.parse(atob(token.split(".")[1]));
-      if (payload.exp && Date.now() >= payload.exp * 1000) {
-        localStorage.removeItem("token");
-        navigate("/sign-in");
-      }
-    } catch (e) {
-      // If token is malformed, force logout
-      localStorage.removeItem("token");
-      navigate("/sign-in");
-    }
-
-    // Get logged-in user's email from localStorage
-    // Get email from localStorage (set during login)
-    const storedEmail = localStorage.getItem("user")
-      ? JSON.parse(localStorage.getItem("user")).email
-      : null;
-
-    // Load saved progress from localStorage - make it user-specific
-    const progressKey = storedEmail
-      ? `applicationProgress_${storedEmail}`
-      : "applicationProgress";
-    const savedProgress = localStorage.getItem(progressKey);
-    if (savedProgress) {
-      try {
-        const progress = JSON.parse(savedProgress);
-        setForm({
-          ...progress.form,
-          email: storedEmail || progress.form.email || initialForm.email,
-        });
-        setCompletedSteps(progress.completedSteps || []);
-
-        // Ensure currentStep is never greater than 7
-        const savedStep = progress.currentStep || 1;
-        if (savedStep > 7) {
-          console.warn("Saved step was greater than 7, redirecting to summary");
-          navigate("/application-summary");
-          return;
+      // Get dashboard info (contains application_id and step info)
+      const dashboardRes = await fetch(
+        "https://admin.truckstaffer.com/api/dashboard",
+        {
+          headers: { Authorization: `Bearer ${token}` },
         }
-        setCurrentStep(savedStep);
-        setApplicationId(progress.applicationId || null);
-      } catch (e) {
-        console.error("Error loading saved progress:", e);
+      );
+      const dashboardData = await dashboardRes.json();
+      if (dashboardData.success && dashboardData.data?.application_id) {
+        const appId = dashboardData.data.application_id;
+        setApplicationId(appId);
+
+        // Use /api/application/view (no /id)
+        const appRes = await fetch(
+          "https://admin.truckstaffer.com/api/application/view",
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          }
+        );
+        const appData = await appRes.json();
+        if (appData.success && appData.data && appData.data.owner_operator) {
+          // Set completed steps from dashboard response
+          const completedStepsCount =
+            dashboardData.data.summary?.completed_steps || 0;
+          const completedStepsArray = Array.from(
+            { length: completedStepsCount },
+            (_, i) => i + 1
+          );
+          setCompletedSteps(completedStepsArray);
+
+          // Find the next step to complete
+          const nextStepKey = dashboardData.data.summary?.next_step;
+          let nextStepNum = 1;
+          if (nextStepKey && nextStepKey.startsWith("step_")) {
+            nextStepNum = parseInt(nextStepKey.replace("step_", ""), 10);
+          }
+          setCurrentStep(nextStepNum);
+
+          // Map backend data to form state for pre-filling
+          const oo = appData.data.owner_operator;
+          setForm((prev) => ({
+            ...prev,
+            // Step 1
+            // PRIORITY: Use logged-in user's email, fallback to backend email
+            email: userEmail || oo.email || "",
+            fullName: oo.full_name || "",
+            companyName: oo.business_name || "",
+            companyAddress: oo.company_address || "",
+            ownerName: oo.owner_name || "",
+            businessEIN: oo.ein || "",
+            phone: oo.phone || "",
+            // email: oo.email || "",
+            website: oo.website || "",
+            businessStructure: oo.business_structure || "",
+            mcDotNumber: oo.mc_dot_number || "",
+            referralSource: oo.referral_source || "",
+            // Step 2
+            ownership: oo.equipment_detail?.ownership_status || "",
+            equipmentType: oo.equipment_detail?.equipment_type || "",
+            yearMakeModel: oo.equipment_detail?.truck_year || "",
+            vin: oo.equipment_detail?.truck_vin || "",
+            gvwr: oo.equipment_detail?.gvwr || "",
+            tarp: oo.equipment_detail?.has_tarp ? "Yes" : "No",
+            additionalTrucks: oo.equipment_detail?.has_additional_trucks
+              ? "Yes"
+              : "No",
+            dotInspection: oo.equipment_detail?.has_dot_certificate
+              ? "Yes"
+              : "No",
+            backupTrucks: oo.equipment_detail?.has_backup_plan ? "Yes" : "No",
+            // Step 3
+            cdlStatus: oo.driver_credential?.cdl_class || "",
+            cdlSuspended: oo.driver_credential?.cdl_suspended ? "Yes" : "No",
+            yearsExperience:
+              oo.driver_credential?.experience_years?.toString() || "",
+            materialsHauled: oo.driver_credential?.materials_hauled
+              ? [oo.driver_credential.materials_hauled]
+              : [],
+            govContracts: oo.driver_credential?.has_gov_contracts
+              ? "Yes"
+              : "No",
+            // Step 4
+            numEmployees:
+              oo.operational_capacity?.employee_count?.toString() || "",
+            workRadius: oo.operational_capacity?.work_radius || "",
+            shiftWillingness: oo.operational_capacity?.shift_flexibility || "",
+            regions: oo.operational_capacity?.preferred_states || "",
+            startDate: oo.operational_capacity?.start_availability || "",
+            weeklyAvailability:
+              oo.operational_capacity?.weekly_availability || "",
+            // Step 5
+            insuranceCoverage:
+              oo.insurance_compliance?.liability_coverage || "",
+            cargoCoverage: oo.insurance_compliance?.cargo_coverage
+              ? "Yes"
+              : "No",
+            insuranceExpiration:
+              oo.insurance_compliance?.insurance_expiry || "",
+            workmansComp: oo.insurance_compliance?.has_worker_comp
+              ? "Yes"
+              : "No",
+            addTruckStaffer: oo.insurance_compliance?.allow_cert_holder
+              ? "Yes"
+              : "No",
+            // Step 6
+            felony: oo.screening_safety?.has_felony ? "Yes" : "No",
+            drugTesting: oo.screening_safety?.willing_drug_test ? "Yes" : "No",
+            enrolledTesting: oo.screening_safety?.enrolled_random_testing
+              ? "Yes"
+              : "No",
+            safetyViolations: oo.screening_safety?.has_safety_violations
+              ? "Yes"
+              : "No",
+            pendingLawsuits: oo.screening_safety?.has_legal_issues
+              ? "Yes"
+              : "No",
+            // Step 7
+            currentContracts: oo.additional_info?.current_contract_status || "",
+            dispatchServices: oo.additional_info?.using_dispatch_services
+              ? "Yes"
+              : "No",
+            telematics: oo.additional_info?.using_telematics ? "Yes" : "No",
+            maintenanceInterest: oo.additional_info
+              ?.interested_in_maintenance_discount
+              ? "Yes"
+              : "No",
+            additionalComments: oo.additional_info?.additional_comments || "",
+          }));
+
+          // If all steps are completed, redirect to summary
+          if (
+            dashboardData.data.summary?.completed_steps === 7 &&
+            dashboardData.data.summary?.next_step === "finalize"
+          ) {
+            navigate("/application-summary");
+            return;
+          }
+        }
+      } else {
+        // No application data in backend, just set email from login
+        if (userEmail) {
+          setForm((prev) => ({
+            ...prev,
+            email: userEmail,
+          }));
+        }
       }
-    } else if (storedEmail) {
-      // If no saved progress, set email from localStorage
-      setForm((prev) => ({
-        ...prev,
-        email: storedEmail,
-      }));
+    } catch (err) {
+      console.error("Error fetching application data:", err);
+      // Even on error, set email from login data
+      if (userEmail) {
+        setForm((prev) => ({
+          ...prev,
+          email: userEmail,
+        }));
+      }
+      Swal.fire({
+        icon: "error",
+        title: "Error",
+        text: "Failed to load application data. Please try again later.",
+      });
     }
   }, [navigate]);
+
+  useEffect(() => {
+    fetchApplicationData();
+  }, [fetchApplicationData]);
 
   // Save progress to localStorage whenever form or completedSteps change
   useEffect(() => {
@@ -820,7 +941,7 @@ const OrderByFollowingStep = () => {
               "applicationProgress",
               JSON.stringify(applicationProgress)
             );
-            
+
             // Also save to user-specific key for dashboard access
             const storedEmail = localStorage.getItem("user")
               ? JSON.parse(localStorage.getItem("user")).email
@@ -831,7 +952,10 @@ const OrderByFollowingStep = () => {
               if (userProgress) {
                 const parsedProgress = JSON.parse(userProgress);
                 parsedProgress.applicationId = applicationId;
-                localStorage.setItem(userProgressKey, JSON.stringify(parsedProgress));
+                localStorage.setItem(
+                  userProgressKey,
+                  JSON.stringify(parsedProgress)
+                );
               }
             }
           } else {
@@ -978,15 +1102,27 @@ const OrderByFollowingStep = () => {
                 {/* Enhanced step indicator */}
                 <div className="mb-6">
                   <div className="d-flex align-items-center justify-content-between mb-3">
-                    <h6 className="text-lg fw-semibold mb-0" style={{ color: PRIMARY_COLOR }}>
+                    <h6
+                      className="text-lg fw-semibold mb-0"
+                      style={{ color: PRIMARY_COLOR }}
+                    >
                       Step {Math.min(currentStep, 7)} of 7
                     </h6>
                     <div className="d-flex align-items-center gap-2">
-                      <span className="text-sm fw-medium" style={{ color: PRIMARY_COLOR }}>
+                      <span
+                        className="text-sm fw-medium"
+                        style={{ color: PRIMARY_COLOR }}
+                      >
                         {completedSteps.length} completed
                       </span>
-                      <div className="px-3 py-2 rounded-pill" style={{ backgroundColor: `${PRIMARY_COLOR}20` }}>
-                        <span className="text-xs fw-bold" style={{ color: PRIMARY_COLOR }}>
+                      <div
+                        className="px-3 py-2 rounded-pill"
+                        style={{ backgroundColor: `${PRIMARY_COLOR}20` }}
+                      >
+                        <span
+                          className="text-xs fw-bold"
+                          style={{ color: PRIMARY_COLOR }}
+                        >
                           {Math.round((completedSteps.length / 7) * 100)}%
                         </span>
                       </div>
@@ -998,9 +1134,9 @@ const OrderByFollowingStep = () => {
                     <div
                       className="progress-bar"
                       role="progressbar"
-                      style={{ 
+                      style={{
                         width: `${(completedSteps.length / 7) * 100}%`,
-                        backgroundColor: PRIMARY_COLOR
+                        backgroundColor: PRIMARY_COLOR,
                       }}
                       aria-valuenow={completedSteps.length}
                       aria-valuemin="0"
@@ -1023,22 +1159,28 @@ const OrderByFollowingStep = () => {
                         <div
                           className="d-inline-flex align-items-center justify-content-center mb-2"
                           style={{
-                            color: currentStep === step.num
-                              ? PRIMARY_COLOR
-                              : completedSteps.includes(step.num)
-                              ? PRIMARY_COLOR
-                              : "#9ca3af"
+                            color:
+                              currentStep === step.num
+                                ? PRIMARY_COLOR
+                                : completedSteps.includes(step.num)
+                                ? PRIMARY_COLOR
+                                : "#9ca3af",
                           }}
                         >
                           <div
                             className="rounded-circle d-flex align-items-center justify-content-center me-2"
                             style={{
-                              backgroundColor: currentStep === step.num
-                                ? PRIMARY_COLOR
-                                : completedSteps.includes(step.num)
-                                ? PRIMARY_COLOR
-                                : "#e5e7eb",
-                              color: currentStep === step.num || completedSteps.includes(step.num) ? "white" : "#6b7280",
+                              backgroundColor:
+                                currentStep === step.num
+                                  ? PRIMARY_COLOR
+                                  : completedSteps.includes(step.num)
+                                  ? PRIMARY_COLOR
+                                  : "#e5e7eb",
+                              color:
+                                currentStep === step.num ||
+                                completedSteps.includes(step.num)
+                                  ? "white"
+                                  : "#6b7280",
                               width: "24px",
                               height: "24px",
                               fontSize: "12px",
@@ -1231,7 +1373,11 @@ const OrderByFollowingStep = () => {
                       <button
                         type="button"
                         className="btn px-32"
-                        style={{ backgroundColor: PRIMARY_COLOR, borderColor: PRIMARY_COLOR, color: 'white' }}
+                        style={{
+                          backgroundColor: PRIMARY_COLOR,
+                          borderColor: PRIMARY_COLOR,
+                          color: "white",
+                        }}
                         onClick={nextStep}
                         disabled={loading}
                       >
@@ -1311,7 +1457,11 @@ const OrderByFollowingStep = () => {
                           <button
                             type="button"
                             className="btn btn-sm"
-                            style={{ backgroundColor: PRIMARY_COLOR, borderColor: PRIMARY_COLOR, color: 'white' }}
+                            style={{
+                              backgroundColor: PRIMARY_COLOR,
+                              borderColor: PRIMARY_COLOR,
+                              color: "white",
+                            }}
                             onClick={handleAddVin}
                             disabled={!form.vin.trim()}
                           >
@@ -1328,7 +1478,10 @@ const OrderByFollowingStep = () => {
                                 <div
                                   key={index}
                                   className="badge d-flex align-items-center gap-2"
-                                  style={{ backgroundColor: PRIMARY_COLOR, color: 'white' }}
+                                  style={{
+                                    backgroundColor: PRIMARY_COLOR,
+                                    color: "white",
+                                  }}
                                 >
                                   {vin}
                                   <button
@@ -2106,45 +2259,48 @@ const OrderByFollowingStep = () => {
                       className="list-group-item d-flex justify-content-between align-items-center"
                     >
                       <span className="text-danger">⚠️ {field}</span>
-                                              <button
-                          type="button"
-                          className="btn btn-sm btn-outline"
-                          style={{ borderColor: PRIMARY_COLOR, color: PRIMARY_COLOR }}
-                          onClick={() => {
-                            setShowFinalValidation(false);
-                            // Navigate to the appropriate step based on the field
-                            if (
-                              [
-                                "Company Name",
-                                "Business EIN",
-                                "MC/DOT Number",
-                              ].includes(field)
-                            ) {
-                              setCurrentStep(1);
-                            } else if (
-                              [
-                                "Year/Make/Model",
-                                "Truck VIN Number(s)",
-                                "Truck GVWR",
-                              ].includes(field)
-                            ) {
-                              setCurrentStep(3);
-                            } else if (
-                              ["CDL Upload", "DOT Medical Card"].includes(field)
-                            ) {
-                              setCurrentStep(3);
-                            } else if (
-                              [
-                                "Certificate of Insurance",
-                                "Business Documents",
-                              ].includes(field)
-                            ) {
-                              setCurrentStep(5);
-                            }
-                          }}
-                        >
-                          Fill Now
-                        </button>
+                      <button
+                        type="button"
+                        className="btn btn-sm btn-outline"
+                        style={{
+                          borderColor: PRIMARY_COLOR,
+                          color: PRIMARY_COLOR,
+                        }}
+                        onClick={() => {
+                          setShowFinalValidation(false);
+                          // Navigate to the appropriate step based on the field
+                          if (
+                            [
+                              "Company Name",
+                              "Business EIN",
+                              "MC/DOT Number",
+                            ].includes(field)
+                          ) {
+                            setCurrentStep(1);
+                          } else if (
+                            [
+                              "Year/Make/Model",
+                              "Truck VIN Number(s)",
+                              "Truck GVWR",
+                            ].includes(field)
+                          ) {
+                            setCurrentStep(3);
+                          } else if (
+                            ["CDL Upload", "DOT Medical Card"].includes(field)
+                          ) {
+                            setCurrentStep(3);
+                          } else if (
+                            [
+                              "Certificate of Insurance",
+                              "Business Documents",
+                            ].includes(field)
+                          ) {
+                            setCurrentStep(5);
+                          }
+                        }}
+                      >
+                        Fill Now
+                      </button>
                     </li>
                   ))}
                 </ul>
@@ -2166,7 +2322,11 @@ const OrderByFollowingStep = () => {
                 <button
                   type="button"
                   className="btn"
-                  style={{ backgroundColor: PRIMARY_COLOR, borderColor: PRIMARY_COLOR, color: 'white' }}
+                  style={{
+                    backgroundColor: PRIMARY_COLOR,
+                    borderColor: PRIMARY_COLOR,
+                    color: "white",
+                  }}
                   onClick={() => {
                     setShowFinalValidation(false);
                     navigate("/application-summary");

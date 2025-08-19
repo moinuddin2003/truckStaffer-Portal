@@ -106,16 +106,16 @@ const ApplicationSummary = () => {
                   <React.Fragment key={step.num}>
                     {/* Step Circle */}
                     <div className="d-flex flex-column align-items-center">
-                      <div className="bg-success text-white rounded-circle d-flex align-items-center justify-content-center mb-2"
-                           style={{ width: '40px', height: '40px', minWidth: '40px' }}>
+                      <div className="bg-primary-600 text-white rounded-circle d-flex align-items-center justify-content-center mb-2"
+                           style={{ width: '40px', height: '40px', minWidth: '40px'  }}>
                         <i className="ri-check-line"></i>
                       </div>
-                      <span className="text-success fw-semibold small">{step.name}</span>
+                      <span className="text-primary-600 fw-semibold small ">{step.name}</span>
                     </div>
                     
                     {/* Connecting Line */}
                     {index < steps.length - 1 && (
-                      <div className="flex-grow-1 mx-2" style={{ height: '2px', backgroundColor: '#28a745' }}></div>
+                      <div className="flex-grow-1 mx-2" style={{ height: '2px', backgroundColor: '#F0831C' }}></div>
                     )}
                   </React.Fragment>
                 ))}
@@ -131,9 +131,9 @@ const ApplicationSummary = () => {
             <div className="text-center mb-4">
               <div className="bg-success bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center mb-3"
                    style={{ width: '60px', height: '60px' }}>
-                <i className="ri-check-line text-success" style={{ fontSize: '1.8rem' }}></i>
+                <i className="ri-check-line text-primary-600" style={{ fontSize: '1.8rem' }}></i>
               </div>
-              <h6 className="text-success fw-bold mb-2">Application Submitted Successfully!</h6>
+              <h6 className="text-primary-600 fw-bold mb-2">Application Submitted Successfully!</h6>
               <p className="text-muted mb-0 small">Thank you for completing your owner-operator application</p>
             </div>
 
@@ -154,7 +154,7 @@ const ApplicationSummary = () => {
                   <span className="visually-hidden">Loading...</span>
                 </div>
                 <p className="mt-2 text-muted small">Finalizing your application...</p>
-              </div>
+              </div>  
             )}
 
             {showSummary && (
@@ -162,7 +162,7 @@ const ApplicationSummary = () => {
                 {/* Application ID */}
                 <div className="bg-light p-4 rounded-3 mb-4 text-center">
                   <h6 className="text-muted mb-2 small">Your Application ID</h6>
-                  <h4 className="text-primary fw-bold mb-0">
+                  <h4 className="text-primary-600 fw-bold mb-0">
                     {applicationId ? `TS-${applicationId}` : 'TS-Pending'}
                   </h4>
                 </div>
@@ -175,7 +175,7 @@ const ApplicationSummary = () => {
             <div className="d-flex justify-content-center">
               <button 
                 type="button" 
-                className="btn btn-success px-4 me-3"
+                className="btn btn-primary-600 px-4 me-3"
                 onClick={() => navigate('/')}
               >
                 <i className="ri-home-line me-2"></i>
