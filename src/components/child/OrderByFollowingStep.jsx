@@ -94,6 +94,24 @@ const OrderByFollowingStep = () => {
       return;
     }
 
+  // Check token expiration if your token is a JWT
+  try {
+    const payload = JSON.parse(atob(token.split(".")[1]));
+    if (payload.exp && Date.now() >= payload.exp * 1000) {
+      localStorage.removeItem("token");
+      localStorage.removeItem("user"); // Also remove user data
+      navigate("/sign-in");
+      return;
+    }
+  } catch (e) {
+    // If token is malformed, force logout
+    console.error("Token validation error:", e);
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
+    navigate("/sign-in");
+    return;
+  }
+
     // ALWAYS get user email from localStorage (login data)
     const storedUser = localStorage.getItem("user");
     const userEmail = storedUser ? JSON.parse(storedUser).email : null;
@@ -106,7 +124,27 @@ const OrderByFollowingStep = () => {
           headers: { Authorization: `Bearer ${token}` },
         }
       );
+
+    // ADD: Check for authentication errors from API response
+    if (dashboardRes.status === 401) {
+      console.log("API returned 401, token expired or invalid");
+      localStorage.removeItem("token");
+      localStorage.removeItem("user");
+      navigate("/sign-in");
+      return;
+    }
+
       const dashboardData = await dashboardRes.json();
+
+    // ADD: Check for authentication errors in response data
+    if (!dashboardData.success && dashboardData.message?.toLowerCase().includes('unauthenticated')) {
+      console.log("API returned unauthenticated error");
+      localStorage.removeItem("token");
+      localStorage.removeItem("user");
+      navigate("/sign-in");
+      return;
+    }
+
       if (dashboardData.success && dashboardData.data?.application_id) {
         const appId = dashboardData.data.application_id;
         setApplicationId(appId);
@@ -118,7 +156,28 @@ const OrderByFollowingStep = () => {
             headers: { Authorization: `Bearer ${token}` },
           }
         );
+
+        // Check for authentication errors from API response
+      if (appRes.status === 401) {
+        console.log("Application API returned 401, token expired or invalid");
+        localStorage.removeItem("token");
+        localStorage.removeItem("user");
+        navigate("/sign-in");
+        return;
+      }
+
+
         const appData = await appRes.json();
+
+// Check for authentication errors in response data
+      if (!appData.success && appData.message?.toLowerCase().includes('unauthenticated')) {
+        console.log("Application API returned unauthenticated error");
+        localStorage.removeItem("token");
+        localStorage.removeItem("user");
+        navigate("/sign-in");
+        return;
+      }
+
         if (appData.success && appData.data && appData.data.owner_operator) {
           // Set completed steps from dashboard response
           const completedStepsCount =
