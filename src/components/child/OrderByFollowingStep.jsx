@@ -1723,9 +1723,14 @@ const OrderByFollowingStep = () => {
                         <div className="d-flex flex-wrap gap-3">
                           {["Dirt", "Stone", "Asphalt", "Sand", "Other"].map(
                             (mat) => (
-                              <div key={mat} className="form-check">
+                              <div
+                                key={mat}
+                                className="form-check gap-1 d-flex"
+                                style={{ marginTop: "0.25rem" }}
+                              >
                                 <input
                                   className="form-check-input"
+                                  style={{ marginTop: "0.20rem"   }}
                                   type="radio"
                                   name="materialsHauled"
                                   id={`mat-${mat}`}
@@ -1739,6 +1744,7 @@ const OrderByFollowingStep = () => {
                                 <label
                                   className="form-check-label"
                                   htmlFor={`mat-${mat}`}
+                                  style={{ lineHeight: "1.5" }}
                                 >
                                   {mat}
                                 </label>
