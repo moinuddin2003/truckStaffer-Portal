@@ -95,23 +95,23 @@ const OrderByFollowingStep = () => {
       return;
     }
 
-  // Check token expiration if your token is a JWT
-  try {
-    const payload = JSON.parse(atob(token.split(".")[1]));
-    if (payload.exp && Date.now() >= payload.exp * 1000) {
+    // Check token expiration if your token is a JWT
+    try {
+      const payload = JSON.parse(atob(token.split(".")[1]));
+      if (payload.exp && Date.now() >= payload.exp * 1000) {
+        localStorage.removeItem("token");
+        localStorage.removeItem("user"); // Also remove user data
+        navigate("/sign-in");
+        return;
+      }
+    } catch (e) {
+      // If token is malformed, force logout
+      console.error("Token validation error:", e);
       localStorage.removeItem("token");
-      localStorage.removeItem("user"); // Also remove user data
+      localStorage.removeItem("user");
       navigate("/sign-in");
       return;
     }
-  } catch (e) {
-    // If token is malformed, force logout
-    console.error("Token validation error:", e);
-    localStorage.removeItem("token");
-    localStorage.removeItem("user");
-    navigate("/sign-in");
-    return;
-  }
 
     // ALWAYS get user email from localStorage (login data)
     const storedUser = localStorage.getItem("user");
@@ -126,25 +126,28 @@ const OrderByFollowingStep = () => {
         }
       );
 
-    // ADD: Check for authentication errors from API response
-    if (dashboardRes.status === 401) {
-      console.log("API returned 401, token expired or invalid");
-      localStorage.removeItem("token");
-      localStorage.removeItem("user");
-      navigate("/sign-in");
-      return;
-    }
+      // ADD: Check for authentication errors from API response
+      if (dashboardRes.status === 401) {
+        console.log("API returned 401, token expired or invalid");
+        localStorage.removeItem("token");
+        localStorage.removeItem("user");
+        navigate("/sign-in");
+        return;
+      }
 
       const dashboardData = await dashboardRes.json();
 
-    // ADD: Check for authentication errors in response data
-    if (!dashboardData.success && dashboardData.message?.toLowerCase().includes('unauthenticated')) {
-      console.log("API returned unauthenticated error");
-      localStorage.removeItem("token");
-      localStorage.removeItem("user");
-      navigate("/sign-in");
-      return;
-    }
+      // ADD: Check for authentication errors in response data
+      if (
+        !dashboardData.success &&
+        dashboardData.message?.toLowerCase().includes("unauthenticated")
+      ) {
+        console.log("API returned unauthenticated error");
+        localStorage.removeItem("token");
+        localStorage.removeItem("user");
+        navigate("/sign-in");
+        return;
+      }
 
       if (dashboardData.success && dashboardData.data?.application_id) {
         const appId = dashboardData.data.application_id;
@@ -159,25 +162,27 @@ const OrderByFollowingStep = () => {
         );
 
         // Check for authentication errors from API response
-      if (appRes.status === 401) {
-        console.log("Application API returned 401, token expired or invalid");
-        localStorage.removeItem("token");
-        localStorage.removeItem("user");
-        navigate("/sign-in");
-        return;
-      }
-
+        if (appRes.status === 401) {
+          console.log("Application API returned 401, token expired or invalid");
+          localStorage.removeItem("token");
+          localStorage.removeItem("user");
+          navigate("/sign-in");
+          return;
+        }
 
         const appData = await appRes.json();
 
-// Check for authentication errors in response data
-      if (!appData.success && appData.message?.toLowerCase().includes('unauthenticated')) {
-        console.log("Application API returned unauthenticated error");
-        localStorage.removeItem("token");
-        localStorage.removeItem("user");
-        navigate("/sign-in");
-        return;
-      }
+        // Check for authentication errors in response data
+        if (
+          !appData.success &&
+          appData.message?.toLowerCase().includes("unauthenticated")
+        ) {
+          console.log("Application API returned unauthenticated error");
+          localStorage.removeItem("token");
+          localStorage.removeItem("user");
+          navigate("/sign-in");
+          return;
+        }
 
         if (appData.success && appData.data && appData.data.owner_operator) {
           // Set completed steps from dashboard response
@@ -906,6 +911,7 @@ const OrderByFollowingStep = () => {
   };
 
   // Submit step to API
+
   const submitStep = async (step) => {
     const token = localStorage.getItem("token");
     if (!token) {
@@ -923,27 +929,130 @@ const OrderByFollowingStep = () => {
 
     try {
       const stepData = getStepData(step);
-      // console.log(`Submitting step ${step} data:`, stepData);
-      // returning complete data object from getStepData() filled in step1
-      // console.log(`Current applicationId:`, applicationId);
-      //currently it is null
 
-      // For step 1, we don't have applicationId yet, so use a different endpoint
+      // Helper function to convert boolean values for FormData
+      const convertForFormData = (value) => {
+        if (typeof value === "boolean") {
+          return value ? "1" : "0"; // Convert boolean to "1"/"0"
+          // return value ? 'true' : 'false';  // Convert to "true"/"false"
+        }
+        return value;
+      };
+
+      // Only send file(s) in FormData if present, otherwise send JSON
+      let hasFiles = false;
+      let formData;
+      let body;
+      let headers = {
+        Authorization: `Bearer ${token}`,
+      };
+
+      // Step 2: truckPhotos + form data
+      if (step === 2 && form.truckPhotos && form.truckPhotos.length > 0) {
+        hasFiles = true;
+        formData = new FormData();
+
+        // Add form fields with boolean conversion
+        Object.keys(stepData).forEach((key) => {
+          const value = convertForFormData(stepData[key]);
+          formData.append(key, value);
+        });
+        form.truckPhotos.forEach((file, index) => {
+          // Debug each file
+          console.log(`File ${index}:`, {
+            name: file.name,
+            type: file.type,
+            size: file.size,
+            lastModified: file.lastModified,
+            constructor: file.constructor.name,
+          });
+
+          // Check if it's actually a File object
+          if (!(file instanceof File)) {
+            console.error(`File ${index} is not a File object:`, typeof file);
+          }
+
+          // Check file type
+          if (!file.type.startsWith("image/")) {
+            console.error(`File ${index} has invalid type:`, file.type);
+          }
+
+          formData.append("truck_photos", file);
+        });
+
+        // Debug FormData contents (this will show what's actually being sent)
+        console.log("FormData contents:");
+        for (let [key, value] of formData.entries()) {
+          if (value instanceof File) {
+            console.log(
+              key,
+              "(File):",
+              value.name,
+              value.type,
+              value.size + " bytes"
+            );
+          } else {
+            console.log(key, ":", value);
+          }
+        }
+
+        body = formData;
+      }
+      // Step 3: CDL files + form data
+      else if (step === 3 && (form.cdlUpload || form.medCardUpload)) {
+        hasFiles = true;
+        formData = new FormData();
+
+        // Add form fields with boolean conversion
+        Object.keys(stepData).forEach((key) => {
+          const value = convertForFormData(stepData[key]);
+          formData.append(key, value);
+        });
+
+        // Add files
+        if (form.cdlUpload) formData.append("cdl_file", form.cdlUpload);
+        if (form.medCardUpload)
+          formData.append("dot_med_card_file", form.medCardUpload);
+        body = formData;
+      }
+      // Step 5: Insurance files + form data
+      else if (
+        step === 5 &&
+        (form.coiUpload || (form.businessDocs && form.businessDocs.length > 0))
+      ) {
+        hasFiles = true;
+        formData = new FormData();
+
+        // Add form fields with boolean conversion
+        Object.keys(stepData).forEach((key) => {
+          const value = convertForFormData(stepData[key]);
+          formData.append(key, value);
+        });
+
+        // Add files
+        if (form.coiUpload) formData.append("coi_file", form.coiUpload);
+        if (form.businessDocs && form.businessDocs.length > 0) {
+          form.businessDocs.forEach((file) => {
+            formData.append("business_docs", file);
+          });
+        }
+        body = formData;
+      }
+      // All other steps: send JSON
+      else {
+        body = JSON.stringify(stepData);
+        headers["Content-Type"] = "application/json";
+      }
+
       const url =
         step === 1
           ? `https://admin.truckstaffer.com/api/application/step${step}`
           : `https://admin.truckstaffer.com/api/application/${applicationId}/step${step}`;
 
-      // console.log(`Making request to:`, url);
-      // Making request to: https://admin.truckstaffer.com/api/application/step1 running at step 1 with error
-
       const response = await fetch(url, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify(stepData),
+        headers,
+        body,
       });
 
       //console.log(`Step ${step} response status:`, response.status);
@@ -1746,7 +1855,7 @@ const OrderByFollowingStep = () => {
                               >
                                 <input
                                   className="form-check-input"
-                                  style={{ marginTop: "0.20rem"   }}
+                                  style={{ marginTop: "0.20rem" }}
                                   type="radio"
                                   name="materialsHauled"
                                   id={`mat-${mat}`}
