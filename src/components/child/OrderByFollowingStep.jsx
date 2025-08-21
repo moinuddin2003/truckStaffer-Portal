@@ -10,6 +10,7 @@ const initialForm = {
   companyName: "",
   companyAddress: "",
   ownerName: "",
+  ownerContact: "",
   businessEIN: "",
   phone: "",
   email: "",
@@ -207,6 +208,7 @@ const OrderByFollowingStep = () => {
             companyName: oo.business_name || "",
             companyAddress: oo.company_address || "",
             ownerName: oo.owner_name || "",
+            ownerContact: oo.owner_contact || "",
             businessEIN: oo.ein || "",
             phone: oo.phone || "",
             // email: oo.email || "",
@@ -352,6 +354,7 @@ const OrderByFollowingStep = () => {
 
     switch (name) {
       case "phone":
+      case "ownerContact":
         // Only allow numbers, spaces, dashes, and parentheses for phone
         validatedValue = value.replace(/[^0-9\s\-\(\)]/g, "");
         break;
@@ -829,9 +832,10 @@ const OrderByFollowingStep = () => {
       case 1:
         return {
           full_name: form.fullName,
-          company_name: form.companyName,
+          business_name: form.companyName,
           company_address: form.companyAddress,
           owner_name: form.ownerName,
+          owner_contact: form.ownerContact,
           ein: form.businessEIN,
           phone: form.phone,
           email: form.email,
@@ -1317,6 +1321,18 @@ const OrderByFollowingStep = () => {
                         />
                       </div>
                       <div className="col-sm-6">
+                        <label className="form-label">Owner's Contact*</label>
+                        <input
+                          type="number"
+                          className="form-control"
+                          name="ownerContact"
+                          value={form.ownerContact}
+                          onChange={handleChange}
+                          placeholder="Enter Owner Contact (minimum 10 digits)"
+                          required
+                        />
+                      </div>
+                      <div className="col-sm-6">
                         <label className="form-label">Business EIN*</label>
                         <input
                           type="text"
@@ -1360,7 +1376,7 @@ const OrderByFollowingStep = () => {
                           }}
                         />
                       </div>
-                      <div className="col-12">
+                      <div className="col-sm-6">
                         <label className="form-label">Company Website</label>
                         <input
                           type="text"
