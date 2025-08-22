@@ -235,6 +235,7 @@ const OrderByFollowingStep = () => {
               ? "Yes"
               : "No",
             backupTrucks: oo.equipment_detail?.has_backup_plan ? "Yes" : "No",
+            truckPhotos: oo.equipment_detail?.truck_photos || [],
             // Step 3
             cdlStatus: oo.driver_credential?.cdl_class || "",
             cdlSuspended: oo.driver_credential?.cdl_suspended ? "Yes" : "No",
@@ -246,6 +247,9 @@ const OrderByFollowingStep = () => {
             govContracts: oo.driver_credential?.has_gov_contracts
               ? "Yes"
               : "No",
+            cdlUpload: oo.driver_credential?.cdl_file|| null,
+            medCardUpload: oo.driver_credential?.dot_med_card_file || null,
+            
             // Step 4
             numEmployees:
               oo.operational_capacity?.employee_count?.toString() || "",
@@ -453,6 +457,12 @@ const OrderByFollowingStep = () => {
     return digitsOnly.length >= 10 && digitsOnly.length <= 15;
   };
 
+    const validateOwnerPhoneNumber = (ownerContact) => {
+    // Remove all non-digit characters for validation
+    const digitsOnly = ownerContact.replace(/\D/g, "");
+    return digitsOnly.length >= 10 && digitsOnly.length <= 15;
+  };
+
   const validateName = (name) => {
     // Must contain at least 2 characters and only letters, spaces, hyphens, apostrophes, and periods
     const nameRegex = /^[a-zA-Z\s\-'\.]{2,}$/;
@@ -515,6 +525,15 @@ const OrderByFollowingStep = () => {
         );
         return false;
       }
+
+      if (!form.ownerContact || !validateOwnerPhoneNumber(form.ownerContact)) {
+        showValidationError(
+          "Invalid Owner Phone Number",
+          "Please enter a valid phone number (minimum 10 digits)."
+        );
+        return false;
+      }
+
       if (!form.businessEIN || form.businessEIN.trim().length < 6) {
         showValidationError(
           "Business EIN Required",
@@ -861,6 +880,7 @@ const OrderByFollowingStep = () => {
           has_additional_trucks: form.additionalTrucks === "Yes",
           has_dot_certificate: form.dotInspection === "Yes",
           has_backup_plan: form.backupTrucks === "Yes",
+          truck_photos: form.truckPhotos,
         };
       case 3:
         return {
@@ -870,6 +890,8 @@ const OrderByFollowingStep = () => {
           has_highway_experience: form.highwayExperience === "Yes",
           materials_hauled: form.materialsHauled.join(", "),
           has_gov_contracts: form.govContracts === "Yes",
+          cdl_file: form.cdlUpload,
+          med_card_file: form.medCardUpload,
         };
       case 4:
         return {
@@ -887,6 +909,8 @@ const OrderByFollowingStep = () => {
           insurance_expiry: form.insuranceExpiration,
           has_worker_comp: form.workmansComp === "Yes",
           allow_cert_holder: form.addTruckStaffer === "Yes",
+          coi_file: form.coiUpload,
+          business_docs: form.businessDocs,
         };
       case 6:
         return {
@@ -959,13 +983,13 @@ const OrderByFollowingStep = () => {
         });
         form.truckPhotos.forEach((file, index) => {
           // Debug each file
-          console.log(`File ${index}:`, {
-            name: file.name,
-            type: file.type,
-            size: file.size,
-            lastModified: file.lastModified,
-            constructor: file.constructor.name,
-          });
+          // console.log(`File ${index}:`, {
+          //   name: file.name,
+          //   type: file.type,
+          //   size: file.size,
+          //   lastModified: file.lastModified,
+          //   constructor: file.constructor.name,
+          // });
 
           // Check if it's actually a File object
           if (!(file instanceof File)) {
@@ -981,20 +1005,20 @@ const OrderByFollowingStep = () => {
         });
 
         // Debug FormData contents (this will show what's actually being sent)
-        console.log("FormData contents:");
-        for (let [key, value] of formData.entries()) {
-          if (value instanceof File) {
-            console.log(
-              key,
-              "(File):",
-              value.name,
-              value.type,
-              value.size + " bytes"
-            );
-          } else {
-            console.log(key, ":", value);
-          }
-        }
+        // console.log("FormData contents:");
+        // for (let [key, value] of formData.entries()) {
+        //   if (value instanceof File) {
+        //     console.log(
+        //       key,
+        //       "(File):",
+        //       value.name,
+        //       value.type,
+        //       value.size + " bytes"
+        //     );
+        //   } else {
+        //     console.log(key, ":", value);
+        //   }
+        // }
 
         body = formData;
       }
@@ -1432,7 +1456,7 @@ const OrderByFollowingStep = () => {
                       <div className="col-sm-6">
                         <label className="form-label">Owner's Contact*</label>
                         <input
-                          type="number"
+                          type="text"
                           className="form-control"
                           name="ownerContact"
                           value={form.ownerContact}
