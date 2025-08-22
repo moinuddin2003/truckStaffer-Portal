@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
+import FileViewer from "./FileViewer";
 
 // Use the orange primary color from CSS
 const PRIMARY_COLOR = "#F0831C"; // --primary-600
@@ -77,6 +78,50 @@ const OrderByFollowingStep = () => {
   const [showFinalValidation, setShowFinalValidation] = useState(false);
   const [missingFields, setMissingFields] = useState([]);
   const navigate = useNavigate();
+
+  // Helper function to remove truck photo
+  const handleRemoveTruckPhoto = (indexToRemove) => {
+    setForm((prev) => ({
+      ...prev,
+      truckPhotos: prev.truckPhotos.filter(
+        (_, index) => index !== indexToRemove
+      ),
+    }));
+  };
+
+  // Helper function to remove business document
+  const handleRemoveBusinessDoc = (indexToRemove) => {
+    setForm((prev) => ({
+      ...prev,
+      businessDocs: prev.businessDocs.filter(
+        (_, index) => index !== indexToRemove
+      ),
+    }));
+  };
+
+  // Helper function to remove CDL file
+  const handleRemoveCDLFile = () => {
+    setForm((prev) => ({
+      ...prev,
+      cdlUpload: null,
+    }));
+  };
+
+  // Helper function to remove Med Card file
+  const handleRemoveMedCardFile = () => {
+    setForm((prev) => ({
+      ...prev,
+      medCardUpload: null,
+    }));
+  };
+
+  // Helper function to remove COI file
+  const handleRemoveCOIFile = () => {
+    setForm((prev) => ({
+      ...prev,
+      coiUpload: null,
+    }));
+  };
 
   // Effect to handle currentStep being greater than 7
   useEffect(() => {
@@ -247,9 +292,9 @@ const OrderByFollowingStep = () => {
             govContracts: oo.driver_credential?.has_gov_contracts
               ? "Yes"
               : "No",
-            cdlUpload: oo.driver_credential?.cdl_file|| null,
+            cdlUpload: oo.driver_credential?.cdl_file || null,
             medCardUpload: oo.driver_credential?.dot_med_card_file || null,
-            
+
             // Step 4
             numEmployees:
               oo.operational_capacity?.employee_count?.toString() || "",
@@ -420,9 +465,10 @@ const OrderByFollowingStep = () => {
   };
 
   const handleFileChange = (e) => {
+    const files = Array.from(e.target.files);
     setForm((prev) => ({
       ...prev,
-      truckPhotos: Array.from(e.target.files),
+      truckPhotos: [...prev.truckPhotos, ...files],
     }));
   };
 
@@ -447,7 +493,11 @@ const OrderByFollowingStep = () => {
   };
 
   const handleBusinessDocs = (e) => {
-    setForm((prev) => ({ ...prev, businessDocs: Array.from(e.target.files) }));
+    const files = Array.from(e.target.files);
+    setForm((prev) => ({
+      ...prev,
+      businessDocs: [...prev.businessDocs, ...files],
+    }));
   };
 
   // Validation functions
@@ -457,7 +507,7 @@ const OrderByFollowingStep = () => {
     return digitsOnly.length >= 10 && digitsOnly.length <= 15;
   };
 
-    const validateOwnerPhoneNumber = (ownerContact) => {
+  const validateOwnerPhoneNumber = (ownerContact) => {
     // Remove all non-digit characters for validation
     const digitsOnly = ownerContact.replace(/\D/g, "");
     return digitsOnly.length >= 10 && digitsOnly.length <= 15;
@@ -1784,6 +1834,12 @@ const OrderByFollowingStep = () => {
                           multiple
                           onChange={handleFileChange}
                         />
+                        <FileViewer
+                          files={form.truckPhotos}
+                          onRemove={handleRemoveTruckPhoto}
+                          label="Truck Photos"
+                          multiple={true}
+                        />
                       </div>
                     </div>
                     <div className="form-group d-flex align-items-center justify-content-end gap-8 mt-4">
@@ -1924,6 +1980,11 @@ const OrderByFollowingStep = () => {
                           className="form-control"
                           onChange={handleCDLFile}
                         />
+                        <FileViewer
+                          files={form.cdlUpload}
+                          onRemove={handleRemoveCDLFile}
+                          label="CDL Document"
+                        />
                       </div>
                       <div className="col-sm-6">
                         <label className="form-label">
@@ -1933,6 +1994,11 @@ const OrderByFollowingStep = () => {
                           type="file"
                           className="form-control"
                           onChange={handleMedCardFile}
+                        />
+                        <FileViewer
+                          files={form.medCardUpload}
+                          onRemove={handleRemoveMedCardFile}
+                          label="DOT Medical Card"
                         />
                       </div>
                     </div>
@@ -2186,6 +2252,11 @@ const OrderByFollowingStep = () => {
                           className="form-control"
                           onChange={handleCOIFile}
                         />
+                        <FileViewer
+                          files={form.coiUpload}
+                          onRemove={handleRemoveCOIFile}
+                          label="Certificate of Insurance"
+                        />
                       </div>
                       <div className="col-12">
                         <label className="form-label">
@@ -2197,6 +2268,12 @@ const OrderByFollowingStep = () => {
                           className="form-control"
                           multiple
                           onChange={handleBusinessDocs}
+                        />
+                        <FileViewer
+                          files={form.businessDocs}
+                          onRemove={handleRemoveBusinessDoc}
+                          label="Business Documents"
+                          multiple={true}
                         />
                       </div>
                     </div>
