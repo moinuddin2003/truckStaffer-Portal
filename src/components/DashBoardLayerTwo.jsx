@@ -67,7 +67,7 @@ const DashBoardLayerTwo = () => {
       step_5: "Insurance & Documents",
       step_6: "Background & Compliance",
       step_7: "Additional Information",
-      finalize: "Finalize Application",
+      // finalize: "Finalize Application",
     };
     return stepNames[stepKey] || "Unknown Step";
   };
@@ -144,11 +144,22 @@ const DashBoardLayerTwo = () => {
       step_5: 5,
       step_6: 6,
       step_7: 7,
-      finalize: 8,
+      // finalize: 8,
     };
 
     return stepMap[dashboardData.summary.next_step] || 1;
   };
+
+  const isApplicationComplete = () => {
+    return (
+      dashboardData?.summary?.percent === 100 ||
+      (dashboardData?.summary?.completed_steps === 7 && dashboardData?.summary?.total_steps === 7)
+    )
+  }
+
+  const getApplicationId = () => {
+    return dashboardData?.application_id || localStorage.getItem("applicationId")
+  }
 
   if (loading) {
     return (
@@ -221,19 +232,38 @@ const DashBoardLayerTwo = () => {
                 </p>
               </div>
               <div className="text-end">
-                <button
-                  className="btn"
-                  style={{
-                    backgroundColor: PRIMARY_COLOR,
-                    borderColor: PRIMARY_COLOR,
-                    color: "white",
-                  }}
-                  onClick={() => navigate("/application")}
-                >
-                  {dashboardData.summary?.next_step === "finalize"
-                    ? "Finalize Application"
-                    : "Continue Application"}
-                </button>
+                {isApplicationComplete() ? (
+                  <div className="text-center">
+                    <div className="mb-2">
+                      <span className="--primary-600 fw-bold">
+                        <Icon icon="ri:check-circle-line" className="me-1" />
+                        Application Complete!
+                      </span>
+                    </div>
+                    <div
+                      className="px-3 py-2 rounded"
+                      style={{
+                        backgroundColor: `${PRIMARY_COLOR}20`,
+                        border: `1px solid ${PRIMARY_COLOR}`,
+                      }}
+                    >
+                      <small className="text-muted d-block">Your Application ID</small>
+                      <strong style={{ color: PRIMARY_COLOR }}>TS-{getApplicationId() || "PENDING"}</strong>
+                    </div>
+                  </div>
+                ) : (
+                  <button
+                    className="btn"
+                    style={{
+                      backgroundColor: PRIMARY_COLOR,
+                      borderColor: PRIMARY_COLOR,
+                      color: "white",
+                    }}
+                    onClick={() => navigate("/application")}
+                  >
+                    {dashboardData.summary?.next_step === "step_7" ? "Finalize Application" : "Continue Application"}
+                  </button>
+                )}
               </div>
             </div>
           </div>
@@ -279,10 +309,11 @@ const DashBoardLayerTwo = () => {
 
             {/* Steps Grid */}
             <div className="row">
-              {Object.keys(dashboardData.steps || {}).map((stepKey) => {
-                const status = getStepStatus(stepKey);
-                const isCurrentStep =
-                  dashboardData.summary?.next_step === stepKey;
+              {Object.keys(dashboardData.steps || {})
+                .filter((stepKey) => stepKey.startsWith("step_") && Number.parseInt(stepKey.replace("step_", "")) <= 7)
+                .map((stepKey) => {
+                  const status = getStepStatus(stepKey)
+                  const isCurrentStep = dashboardData.summary?.next_step === stepKey && !isApplicationComplete()
 
                 return (
                   <div key={stepKey} className="col-md-6 mb-3">
@@ -441,20 +472,20 @@ const DashBoardLayerTwo = () => {
                   }}
                   onClick={() => navigate("/application")}
                 >
-                  <Icon
-                    icon="ri:edit-line"
-                    className="mb-2"
-                    style={{ fontSize: "1.5rem" }}
-                  />
+                  <Icon icon="ri:edit-line" className="mb-2" style={{ fontSize: "1.5rem" }} />
                   <div className="fw-semibold">
-                    {dashboardData.summary?.next_step === "finalize"
-                      ? "Finalize Application"
-                      : "Continue Application"}
+                    {isApplicationComplete()
+                      ? "View Application"
+                      : dashboardData.summary?.next_step === "step_7"
+                        ? "Finalize Application"
+                        : "Continue Application"}
                   </div>
                   <div className="text-secondary-light text-xs">
-                    {dashboardData.summary?.next_step === "finalize"
-                      ? "Complete your application"
-                      : "Resume where you left off"}
+                    {isApplicationComplete()
+                      ? "View your completed application"
+                      : dashboardData.summary?.next_step === "step_7"
+                        ? "Complete your application"
+                        : "Resume where you left off"}
                   </div>
                 </button>
               </div>

@@ -4,113 +4,229 @@ import { Link, NavLink, useLocation, useNavigate } from "react-router-dom";
 import ThemeToggleButton from "../helper/ThemeToggleButton";
 
 const MasterLayout = ({ children }) => {
-  let [sidebarActive, seSidebarActive] = useState(false);
+  let [sidebarActive, setSidebarActive] = useState(false);
   let [mobileMenu, setMobileMenu] = useState(false);
   const location = useLocation(); // Hook to get the current route
   const navigate = useNavigate();
+  const [isNavigating, setIsNavigating] = useState(false)
+
 
   // Add state for user name
   const [userName, setUserName] = useState(() => localStorage.getItem('name') || 'User');
 
+   const [applicationProgress, setApplicationProgress] = useState(0);
+     const [applicationData, setApplicationData] = useState(null)
+
+
   useEffect(() => {
     // Listen for changes to localStorage (e.g., after login)
     const handleStorage = () => {
-      setUserName(localStorage.getItem('name') || 'User');
-    };
-    
+      setUserName(localStorage.getItem("name") || "User")
+    }
+
     // Listen for custom profile update events
     const handleProfileUpdate = () => {
-      setUserName(localStorage.getItem('name') || 'User');
-    };
-    
-    window.addEventListener('storage', handleStorage);
-    window.addEventListener('profileUpdated', handleProfileUpdate);
-    
+      setUserName(localStorage.getItem("name") || "User")
+    }
+
+    window.addEventListener("storage", handleStorage)
+    window.addEventListener("profileUpdated", handleProfileUpdate)
+
     // Also update on mount
-    handleStorage();
-    
+    handleStorage()
+
     return () => {
-      window.removeEventListener('storage', handleStorage);
-      window.removeEventListener('profileUpdated', handleProfileUpdate);
-    };
-  }, []);
+      window.removeEventListener("storage", handleStorage)
+      window.removeEventListener("profileUpdated", handleProfileUpdate)
+    }
+  }, [])
+
+  useEffect(() => {
+    const checkApplicationProgress = async () => {
+      try {
+        const token = localStorage.getItem("token")
+        if (!token) return
+
+        const response = await fetch("https://admin.truckstaffer.com/api/dashboard", {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        })
+
+        if (response.ok) {
+          const result = await response.json()
+          if (result.success && result.data) {
+            const data = result.data
+            setApplicationData(data)
+            setApplicationProgress(data.summary?.percent || 0)
+          }
+        }
+      } catch (error) {
+        console.error("Error checking application progress:", error)
+      }
+    }
+
+    checkApplicationProgress()
+
+    // Listen for application progress updates
+    const handleProgressUpdate = () => {
+      checkApplicationProgress()
+    }
+
+    window.addEventListener("applicationProgressUpdated", handleProgressUpdate)
+
+    return () => {
+      window.removeEventListener("applicationProgressUpdated", handleProgressUpdate)
+    }
+  }, [location.pathname]) // Added location.pathname dependency to refetch data when 
 
   useEffect(() => {
     const handleDropdownClick = (event) => {
-      event.preventDefault();
-      const clickedLink = event.currentTarget;
-      const clickedDropdown = clickedLink.closest(".dropdown");
+      event.preventDefault()
+      const clickedLink = event.currentTarget
+      const clickedDropdown = clickedLink.closest(".dropdown")
 
-      if (!clickedDropdown) return;
+      if (!clickedDropdown) return
 
-      const isActive = clickedDropdown.classList.contains("open");
+      const isActive = clickedDropdown.classList.contains("open")
 
       // Close all dropdowns
-      const allDropdowns = document.querySelectorAll(".sidebar-menu .dropdown");
+      const allDropdowns = document.querySelectorAll(".sidebar-menu .dropdown")
       allDropdowns.forEach((dropdown) => {
-        dropdown.classList.remove("open");
-        const submenu = dropdown.querySelector(".sidebar-submenu");
+        dropdown.classList.remove("open")
+        const submenu = dropdown.querySelector(".sidebar-submenu")
         if (submenu) {
-          submenu.style.maxHeight = "0px"; // Collapse submenu
+          submenu.style.maxHeight = "0px" // Collapse submenu
         }
-      });
+      })
 
       // Toggle the clicked dropdown
       if (!isActive) {
-        clickedDropdown.classList.add("open");
-        const submenu = clickedDropdown.querySelector(".sidebar-submenu");
+        clickedDropdown.classList.add("open")
+        const submenu = clickedDropdown.querySelector(".sidebar-submenu")
         if (submenu) {
-          submenu.style.maxHeight = `${submenu.scrollHeight}px`; // Expand submenu
+          submenu.style.maxHeight = `${submenu.scrollHeight}px` // Expand submenu
         }
       }
-    };
+    }
 
     // Attach click event listeners to all dropdown triggers
-    const dropdownTriggers = document.querySelectorAll(
-      ".sidebar-menu .dropdown > a, .sidebar-menu .dropdown > Link"
-    );
+    const dropdownTriggers = document.querySelectorAll(".sidebar-menu .dropdown > a, .sidebar-menu .dropdown > Link")
 
     dropdownTriggers.forEach((trigger) => {
-      trigger.addEventListener("click", handleDropdownClick);
-    });
+      trigger.addEventListener("click", handleDropdownClick)
+    })
 
     const openActiveDropdown = () => {
-      const allDropdowns = document.querySelectorAll(".sidebar-menu .dropdown");
+      const allDropdowns = document.querySelectorAll(".sidebar-menu .dropdown")
       allDropdowns.forEach((dropdown) => {
-        const submenuLinks = dropdown.querySelectorAll(".sidebar-submenu li a");
+        const submenuLinks = dropdown.querySelectorAll(".sidebar-submenu li a")
         submenuLinks.forEach((link) => {
-          if (
-            link.getAttribute("href") === location.pathname ||
-            link.getAttribute("to") === location.pathname
-          ) {
-            dropdown.classList.add("open");
-            const submenu = dropdown.querySelector(".sidebar-submenu");
+          if (link.getAttribute("href") === location.pathname || link.getAttribute("to") === location.pathname) {
+            dropdown.classList.add("open")
+            const submenu = dropdown.querySelector(".sidebar-submenu")
             if (submenu) {
-              submenu.style.maxHeight = `${submenu.scrollHeight}px`; // Expand submenu
+              submenu.style.maxHeight = `${submenu.scrollHeight}px` // Expand submenu
             }
           }
-        });
-      });
-    };
+        })
+      })
+    }
 
     // Open the submenu that contains the active route
-    openActiveDropdown();
+    openActiveDropdown()
 
     // Cleanup event listeners on unmount
     return () => {
       dropdownTriggers.forEach((trigger) => {
-        trigger.removeEventListener("click", handleDropdownClick);
-      });
-    };
-  }, [location.pathname]);
+        trigger.removeEventListener("click", handleDropdownClick)
+      })
+    }
+  }, [location.pathname])
 
-  let sidebarControl = () => {
-    seSidebarActive(!sidebarActive);
-  };
+  const handleApplicationClick = (e) => {
+    e.preventDefault()
+    if (isNavigating) {
+      console.log("[v0] Navigation already in progress, ignoring click")
+      return
+    }
 
-  let mobileMenuControl = () => {
-    setMobileMenu(!mobileMenu);
-  };
+    if (!applicationData) {
+      console.log("[v0] Application data is null, refetching...")
+      const checkAndNavigate = async () => {
+        try {
+          const token = localStorage.getItem("token")
+          if (!token) {
+            navigate("/application")
+            return
+          }
+
+          const response = await fetch("https://admin.truckstaffer.com/api/dashboard", {
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json",
+            },
+          })
+
+          if (response.ok) {
+            const result = await response.json()
+            if (result.success && result.data) {
+              const data = result.data
+              setApplicationData(data)
+              setApplicationProgress(data.summary?.percent || 0)
+
+              const isComplete =
+                data.summary?.percent === 100 ||
+                (data.summary?.completed_steps === 7 && data.summary?.total_steps === 7)
+
+              if (isComplete) {
+                navigate("/application-summary")
+              } else {
+                navigate("/application")
+              }
+            } else {
+              navigate("/application")
+            }
+          } else {
+            navigate("/application")
+          }
+        } catch (error) {
+          console.error("Error refetching application data:", error)
+          navigate("/application")
+        }
+      }
+
+      checkAndNavigate()
+      return
+    }
+    console.log("[v0] Application click - applicationData:", applicationData)
+    console.log("[v0] Application click - percent:", applicationData?.summary?.percent)
+    console.log("[v0] Application click - completed_steps:", applicationData?.summary?.completed_steps)
+    console.log("[v0] Application click - total_steps:", applicationData?.summary?.total_steps)
+
+    const isComplete =
+      applicationData?.summary?.percent === 100 ||
+      (applicationData?.summary?.completed_steps === 7 && applicationData?.summary?.total_steps === 7)
+
+    console.log("[v0] Application click - isComplete:", isComplete)
+
+    if (isComplete) {
+      console.log("[v0] Navigating to application-summary")
+      navigate("/application-summary")
+    } else {
+      console.log("[v0] Navigating to application")
+      navigate("/application")
+    }
+  }
+
+  const sidebarControl = () => {
+    setSidebarActive(!sidebarActive)
+  }
+
+  const mobileMenuControl = () => {
+    setMobileMenu(!mobileMenu)
+  }
 
   const handleLogout = () => {
     localStorage.removeItem('token');
@@ -169,13 +285,18 @@ const MasterLayout = ({ children }) => {
               </NavLink>
             </li>
              <li>
-              <NavLink
-                to='/application'
-                className={(navData) => (navData.isActive ? "active-page" : "")}
+              <a
+                href="/application"
+                onClick={handleApplicationClick}
+                className={
+                  location.pathname === "/application" || location.pathname === "/application-summary"
+                    ? "active-page"
+                    : ""
+                }
               >
-                <Icon icon='memory:application' className='menu-icon' />
+                <Icon icon="memory:application" className="menu-icon" />
                 <span>Application</span>
-              </NavLink>
+              </a>
             </li>
             <li>
               <NavLink
