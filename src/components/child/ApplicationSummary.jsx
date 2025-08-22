@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
+import MasterLayout from "../../masterLayout/MasterLayout";
 
 const ApplicationSummary = () => {
   const [loading, setLoading] = useState(false);
@@ -92,8 +93,9 @@ const ApplicationSummary = () => {
   ];
 
   return (
-    <div className="container-fluid d-flex align-items-center justify-content-center" style={{ minHeight: '100vh' }}>
-      <div className="row justify-content-center w-100">
+    <MasterLayout>
+      <div className="container-fluid py-4">
+        <div className="row justify-content-center">
         <div className="col-lg-10 col-xl-8">
           {/* Task Progress Header */}
           <div className="mb-4 text-center">
@@ -186,6 +188,7 @@ const ApplicationSummary = () => {
         </div>
       </div>
     </div>
+    </MasterLayout>
   );
 };
 
